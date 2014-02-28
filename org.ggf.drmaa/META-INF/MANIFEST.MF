@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DRMAA api bundle
+Bundle-SymbolicName: org.ggf.drmaa
+Bundle-Version: 1.0.0
+Bundle-Vendor: Diamond Light Source
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Export-Package: org.ggf.drmaa;version="1.0.0"
