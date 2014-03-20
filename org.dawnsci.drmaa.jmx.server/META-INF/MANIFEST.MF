@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DRMAA JMX Server
+Bundle-SymbolicName: org.dawnsci.drmaa.jmx.server
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: iSencia
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Import-Package: org.dawnsci.drmaa.common;version="1.0.0",
+ org.dawnsci.drmaa.jmx;version="1.0.0",
+ org.ggf.drmaa;version="1.0.0"
+Service-Component: OSGI-INF/component.xml
