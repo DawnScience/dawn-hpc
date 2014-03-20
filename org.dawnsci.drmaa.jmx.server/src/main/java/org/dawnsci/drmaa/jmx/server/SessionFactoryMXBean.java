@@ -15,9 +15,22 @@
  */
 package org.dawnsci.drmaa.jmx.server;
 
-
+/**
+ * The interface for a JMX-based remote access to a DRMAA SessionFactory.
+ * 
+ * @author erwindl
+ *
+ */
 public interface SessionFactoryMXBean {
   
-  SessionMXBean getSession() throws Exception;
+  /**
+   * In order to follow JMX conventions about getters&setters, 
+   * the getSession method as defined in drmaa's SessionFactory
+   * is renamed to createSession here.
+   * 
+   * @return
+   * @throws Exception
+   */
+  SessionMXBean createSession() throws Exception;
 
 }

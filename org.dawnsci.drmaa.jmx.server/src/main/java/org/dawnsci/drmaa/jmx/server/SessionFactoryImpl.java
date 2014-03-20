@@ -24,13 +24,13 @@ import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
 
 public class SessionFactoryImpl implements SessionFactoryMXBean {
-  
+
   static final String SESSIONFACTORY_MXBEAN_NAME = "org.dawnsci.drmaa:type=SessionFactory";
   static final String SESSION_MXBEAN_NAME = "org.dawnsci.drmaa:type=Session";
 
   private SessionFactory localSessionFactory;
   private Session localSession;
-  
+
   private SessionImpl remoteSession;
 
   private MBeanServer mbeanServer;
@@ -49,23 +49,29 @@ public class SessionFactoryImpl implements SessionFactoryMXBean {
 
   public void deactivate() throws Exception {
     if (mbeanServer != null) {
-      if(sessionFactoryMxbeanName!=null)
+      if (sessionFactoryMxbeanName != null)
         mbeanServer.unregisterMBean(sessionFactoryMxbeanName);
-      if(sessionMxbeanName!=null)
+      if (sessionMxbeanName != null)
         mbeanServer.unregisterMBean(sessionMxbeanName);
     }
+    remoteSession = null;
     if (localSession != null) {
       localSession.exit();
     }
   }
 
   @Override
-  public SessionMXBean getSession() throws Exception {
+  public SessionMXBean createSession() throws Exception {
     synchronized (this) {
+      if (localSession == null && localSessionFactory != null) {
+        localSession = localSessionFactory.getSession();
+      }
       if (remoteSession == null) {
-        remoteSession = new SessionImpl();
+        remoteSession = new SessionImpl(localSession);
         sessionMxbeanName = new ObjectName(SESSION_MXBEAN_NAME);
         mbeanServer.registerMBean(remoteSession, sessionMxbeanName);
+      } else if (remoteSession.getLocalSession() == null && localSession != null) {
+        remoteSession.setLocalSession(localSession);
       }
     }
     return remoteSession;

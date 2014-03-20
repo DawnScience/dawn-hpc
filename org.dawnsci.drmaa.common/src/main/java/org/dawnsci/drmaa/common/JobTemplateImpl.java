@@ -55,36 +55,20 @@ public class JobTemplateImpl implements JobTemplate {
   private static final String ERROR_PATH = "drmaa_error_path";
   private static final String JOIN_FILES = "drmaa_join_files";
   private static final String TRANSFER_FILES = "drmaa_transfer_files";
-  private static Set<String> supportedAttributeNames = new HashSet<>(Arrays.asList(
-          REMOTE_COMMAND,
-          INPUT_PARAMETERS,
-          JOB_SUBMISSION_STATE,
-          JOB_ENVIRONMENT,
-          WORKING_DIRECTORY,
-          JOB_CATEGORY,
-          NATIVE_SPECIFICATION,
-          EMAIL_ADDRESS,
-          BLOCK_EMAIL,
-          START_TIME,
-          JOB_NAME,
-          INPUT_PATH,
-          OUTPUT_PATH,
-          ERROR_PATH,
-          JOIN_FILES,
-          TRANSFER_FILES
-          ));
+  private static Set<String> supportedAttributeNames = new HashSet<>(Arrays.asList(REMOTE_COMMAND, INPUT_PARAMETERS, JOB_SUBMISSION_STATE, JOB_ENVIRONMENT,
+      WORKING_DIRECTORY, JOB_CATEGORY, NATIVE_SPECIFICATION, EMAIL_ADDRESS, BLOCK_EMAIL, START_TIME, JOB_NAME, INPUT_PATH, OUTPUT_PATH, ERROR_PATH, JOIN_FILES,
+      TRANSFER_FILES));
 
-  /* Not supported
-  private static final String DEADLINE_TIME = "drmaa_deadline_time"
-  private static final String HARD_WALLCLOCK_TIME_LIMIT = "drmaa_wct_hlimit"
-  private static final String SOFT_WALLCLOCK_TIME_LIMIT = "drmaa_wct_slimit"
-  private static final String HARD_RUN_DURATION_LIMIT = "drmaa_run_duration_hlimit"
-  private static final String SOFT_RUN_DURATION_LIMIT = "drmaa_run_duration_slimit"
-  */
+  /*
+   * Not supported private static final String DEADLINE_TIME = "drmaa_deadline_time" private static final String
+   * HARD_WALLCLOCK_TIME_LIMIT = "drmaa_wct_hlimit" private static final String SOFT_WALLCLOCK_TIME_LIMIT =
+   * "drmaa_wct_slimit" private static final String HARD_RUN_DURATION_LIMIT = "drmaa_run_duration_hlimit" private static
+   * final String SOFT_RUN_DURATION_LIMIT = "drmaa_run_duration_slimit"
+   */
   private static final String HOLD_STRING = "drmaa_hold";
   private static final String ACTIVE_STRING = "drmaa_active";
   private static PartialTimestampFormat ptf = new PartialTimestampFormat();
-  
+
   private UUID id;
   private String remoteCommand;
   private List<String> args = new ArrayList<>();
@@ -116,7 +100,7 @@ public class JobTemplateImpl implements JobTemplate {
   public UUID getId() {
     return id;
   }
-  
+
   public void setRemoteCommand(String remoteCommand) {
     this.remoteCommand = remoteCommand;
   }
@@ -127,7 +111,8 @@ public class JobTemplateImpl implements JobTemplate {
 
   public void setArgs(List<String> args) {
     this.args.clear();
-    this.args.addAll(args);
+    if(args!=null)
+      this.args.addAll(args);
   }
 
   public List<String> getArgs() {
@@ -157,7 +142,8 @@ public class JobTemplateImpl implements JobTemplate {
 
   public void setJobEnvironment(Map<String, String> env) {
     this.env.clear();
-    this.env.putAll(env);
+    if(env!=null)
+      this.env.putAll(env);
   }
 
   public Map<String, String> getJobEnvironment() {
@@ -190,7 +176,8 @@ public class JobTemplateImpl implements JobTemplate {
 
   public void setEmail(Set<String> email) {
     this.emailAddresses.clear();
-    this.emailAddresses.addAll(email);
+    if(email!=null)
+      this.emailAddresses.addAll(email);
   }
 
   public Set<String> getEmail() {
@@ -262,21 +249,21 @@ public class JobTemplateImpl implements JobTemplate {
   }
 
   public void setTransferFiles(FileTransferMode mode) {
-    StringBuffer buf = new StringBuffer();
-
-    if (mode.getInputStream()) {
-      buf.append('i');
+    if (mode != null) {
+      StringBuffer buf = new StringBuffer();
+      if (mode.getInputStream()) {
+        buf.append('i');
+      }
+      if (mode.getOutputStream()) {
+        buf.append('o');
+      }
+      if (mode.getErrorStream()) {
+        buf.append('e');
+      }
+      this.transferFiles = buf.toString();
+    } else {
+      this.transferFiles = null;
     }
-
-    if (mode.getOutputStream()) {
-      buf.append('o');
-    }
-
-    if (mode.getErrorStream()) {
-      buf.append('e');
-    }
-
-    this.transferFiles = buf.toString();
   }
 
   public FileTransferMode getTransferFiles() {

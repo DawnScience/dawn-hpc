@@ -82,6 +82,9 @@ public class SessionImpl implements Session {
       throw new NoActiveSessionException();
     } else {
       LOGGER.info("Exiting DRMAA Executor-based Session with contact {}", contact);
+      for(JobTemplate removedJT : jobTemplates.values()) {
+        deleteJobTemplate(removedJT);
+      }
       initialized = false;
     }
   }

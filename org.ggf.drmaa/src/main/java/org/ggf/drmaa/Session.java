@@ -540,7 +540,7 @@ public abstract interface Session {
    *           <LI>InternalException -- an error has occured in the DRMAA implementation</LI>
    *           </UL>
    */
-  public abstract String getContact();
+  public abstract String getContact() throws DrmaaException;
 
   /**
    * Returns a Version instance containing the major and minor version numbers of the DRMAA library. For DRMAA 0.5,
@@ -557,7 +557,7 @@ public abstract interface Session {
    *           <LI>InternalException -- an error has occured in the DRMAA implementation</LI>
    *           </UL>
    */
-  public abstract Version getVersion();
+  public abstract Version getVersion() throws DrmaaException;
 
   /**
    * If called before init(), this method returns a comma delimited list of available DRM systems, one element per DRM
@@ -573,7 +573,7 @@ public abstract interface Session {
    *           <LI>InternalException -- an error has occured in the DRMAA implementation</LI>
    *           </UL>
    */
-  public abstract String getDrmSystem();
+  public abstract String getDrmSystem() throws DrmaaException;
 
   /**
    * If called before init(), this method returns a comma delimited list of available DRMAA implementations, one element
@@ -589,5 +589,5 @@ public abstract interface Session {
    *           <LI>InternalException -- an error has occured in the DRMAA implementation</LI>
    *           </UL>
    */
-  public abstract String getDrmaaImplementation();
+  public abstract String getDrmaaImplementation() throws DrmaaException;
 }

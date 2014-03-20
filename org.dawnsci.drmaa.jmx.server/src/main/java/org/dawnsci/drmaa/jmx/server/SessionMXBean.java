@@ -17,10 +17,21 @@ package org.dawnsci.drmaa.jmx.server;
 
 import org.dawnsci.drmaa.jmx.JobTemplateBean;
 import org.ggf.drmaa.DrmaaException;
+import org.ggf.drmaa.Version;
 
 public interface SessionMXBean {
 
-  JobTemplateBean createJobTemplate();
+  JobTemplateBean createJobTemplate() throws DrmaaException;
   void deleteJobTemplate(JobTemplateBean jt) throws DrmaaException;
   
+  String runJob(JobTemplateBean jt) throws DrmaaException;
+  
+  void init(String contact) throws DrmaaException;
+  void exit() throws DrmaaException;
+  
+  
+  String getContact() throws DrmaaException;
+  Version getVersion() throws DrmaaException;
+  String getDrmSystem() throws DrmaaException;
+  String getDrmaaImplementation() throws DrmaaException;
 }

@@ -16,6 +16,7 @@
 package org.dawnsci.drmaa.jmx;
 
 import java.beans.ConstructorProperties;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -29,6 +30,7 @@ import org.ggf.drmaa.FileTransferMode;
 import org.ggf.drmaa.InternalException;
 import org.ggf.drmaa.InvalidAttributeValueException;
 import org.ggf.drmaa.JobTemplate;
+import org.ggf.drmaa.PartialTimestampFormat;
 
 /**
  * 
@@ -83,19 +85,36 @@ public class JobTemplateBean {
   private boolean joinFiles;
   private String transferFiles;
 
+  
+  public JobTemplateBean() {
+    
+    System.out.println("!!!! default constructor");
+  }
+
+
+
   /**
    * Creates a new instance of JobTemplateImpl
    * 
    * @param session the associated SessionImpl object
    * @param id the table index of the native job template
    */
-  @ConstructorProperties({"id"})
   public JobTemplateBean(String id) {
     this.id = id;
   }
+  
+  
 
   public String getId() {
     return id;
+  }
+  
+  /**
+   * to keep JMX MXbean conventions happy
+   * @param id
+   */
+  public void setId(String id) {
+    this.id=id;
   }
 
   public void setRemoteCommand(String remoteCommand) {
@@ -270,6 +289,15 @@ public class JobTemplateBean {
   public Set<String> getAttributeNames() {
     return supportedAttributeNames;
   }
+  
+  /**
+   * to keep JMX MXbean conventions happy
+   * 
+   * @param attrNames
+   */
+  public void setAttributeNames(Set<String> attrNames) {
+    
+  }
 
   /**
    * Tests whether this JobTemplateImpl represents the same native job template as the given object. This implementation
@@ -299,5 +327,31 @@ public class JobTemplateBean {
   @Override
   public String toString() {
     return "JobTemplate [id=" + id + ", jobName=" + jobName + ", remoteCommand=" + remoteCommand + "]";
+  }
+
+  public void pushData(JobTemplate localJt) throws DrmaaException {
+    localJt.setArgs(getArgs());
+    localJt.setBlockEmail(getBlockEmail());
+    localJt.setEmail(getEmail());
+    localJt.setErrorPath(getErrorPath());
+    localJt.setInputPath(getInputPath());
+    localJt.setJobCategory(getJobCategory());
+    localJt.setJobEnvironment(getJobEnvironment());
+    localJt.setJobName(getJobName());
+    localJt.setJobSubmissionState(getJobSubmissionState());
+    localJt.setJoinFiles(getJoinFiles());
+    localJt.setNativeSpecification(getNativeSpecification());
+    localJt.setOutputPath(getOutputPath());
+    localJt.setRemoteCommand(getRemoteCommand());
+    if (getStartTime() != null) {
+      PartialTimestampFormat ptsf = new PartialTimestampFormat();
+      try {
+        localJt.setStartTime(ptsf.parse(getStartTime()));
+      } catch (ParseException e) {
+        throw new InternalException("startTime property is unparsable");
+      }
+    }
+    localJt.setTransferFiles(getTransferFiles());
+    localJt.setWorkingDirectory(getWorkingDirectory());
   }
 }

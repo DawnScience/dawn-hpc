@@ -37,6 +37,7 @@
 
 package org.ggf.drmaa;
 
+import java.beans.ConstructorProperties;
 import java.io.Serializable;
 
 /**
@@ -63,6 +64,7 @@ public class Version implements Serializable, Cloneable, Comparable<Version> {
    * @param major major version number (non-negative integer)
    * @param minor minor version number (non-negative integer)
    */
+  @ConstructorProperties({"major","minor"})
   public Version(int major, int minor) {
     if (major < 0) {
       throw new IllegalArgumentException("Major version number must be non-negative");
