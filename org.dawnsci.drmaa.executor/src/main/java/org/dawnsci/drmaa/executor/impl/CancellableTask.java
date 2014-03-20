@@ -14,27 +14,15 @@
 */
 package org.dawnsci.drmaa.executor.impl;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Callable;
+import java.util.concurrent.RunnableFuture;
 
 /**
  * @see JCIP 7.1.7, Listing 7.12
  * 
  * @author erwin
- *
  */
-public class JobExecutor extends ThreadPoolExecutor {
-
-  public JobExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
-    super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
-  }
-
-  protected <T> java.util.concurrent.RunnableFuture<T> newTaskFor(java.util.concurrent.Callable<T> callable) {
-    if(callable instanceof CancellableTask) {
-      return ((CancellableTask<T>)callable).newFutureTask();
-    } else {
-      return super.newTaskFor(callable);
-    }
-  }
+public interface CancellableTask<T> extends Callable<T> {
+  void cancel();
+  RunnableFuture<T> newFutureTask();
 }

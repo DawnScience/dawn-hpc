@@ -48,12 +48,18 @@ import org.ggf.drmaa.SessionFactory;
 public class SessionFactoryImpl extends SessionFactory {
     private Session thisSession = null;
     
-    /**
-     * Creates a new instance of SessionFactoryImpl.
-     */
-    public SessionFactoryImpl() {
+    public void activate() {
+      SessionFactory.setFactory(this);
     }
-    
+
+    public void deactivate() {
+      synchronized (SessionFactory.class) {
+        if (this.equals(SessionFactory.getFactory())) {
+          SessionFactory.setFactory(null);
+        }
+      }
+    }
+
     public Session getSession() {
         synchronized (this) {
             if (thisSession == null) {

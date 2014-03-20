@@ -16,21 +16,33 @@
 package org.dawnsci.drmaa.executor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+import org.dawnsci.drmaa.common.JobTemplateImpl;
+import org.dawnsci.drmaa.executor.impl.JobExecutionFuture;
+import org.dawnsci.drmaa.executor.impl.JobExecutionTask;
 import org.dawnsci.drmaa.executor.impl.JobExecutor;
 import org.ggf.drmaa.AlreadyActiveSessionException;
 import org.ggf.drmaa.DrmaaException;
+import org.ggf.drmaa.ExitTimeoutException;
+import org.ggf.drmaa.InvalidJobException;
 import org.ggf.drmaa.JobInfo;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.NoActiveSessionException;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.Version;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A Session implementation that executes jobs on a JDK ExecutorService.
@@ -39,22 +51,28 @@ import org.ggf.drmaa.Version;
  * 
  */
 public class SessionImpl implements Session {
-
-  private static AtomicInteger idCounter = new AtomicInteger();
+  private final static Logger LOGGER = LoggerFactory.getLogger(SessionImpl.class);
 
   private boolean initialized = false;
+  private String contact = "localhost";
 
-  private static Map<String, JobTemplate> jobTemplates = new HashMap<>();
-  private Map<String, JobExecutor> jobExecutors = new HashMap<>();
+  private static Map<UUID, JobTemplate> jobTemplates = new HashMap<>();
+  private Map<String, JobExecutionFuture> jobExecutors = new HashMap<>();
 
-  private ExecutorService jobExecutorService = Executors.newFixedThreadPool(3);
+  private ExecutorService jobExecutorService;
+
+  public SessionImpl(int maxConcurrentJobs) {
+    jobExecutorService = new JobExecutor(maxConcurrentJobs, maxConcurrentJobs, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+  }
 
   @Override
   public void init(String contact) throws DrmaaException {
     if (initialized) {
       throw new AlreadyActiveSessionException();
     } else {
+      LOGGER.info("Initializing DRMAA Executor-based Session with contact {}", contact);
       initialized = true;
+      this.contact = contact;
     }
   }
 
@@ -63,6 +81,7 @@ public class SessionImpl implements Session {
     if (!initialized) {
       throw new NoActiveSessionException();
     } else {
+      LOGGER.info("Exiting DRMAA Executor-based Session with contact {}", contact);
       initialized = false;
     }
   }
@@ -72,9 +91,9 @@ public class SessionImpl implements Session {
     if (!initialized) {
       throw new NoActiveSessionException();
     } else {
-      String jobId = Integer.toString(idCounter.getAndIncrement());
-      JobTemplate jobTemplate = new JobTemplateImpl(jobId);
-      jobTemplates.put(jobId, jobTemplate);
+      JobTemplateImpl jobTemplate = new JobTemplateImpl(UUID.randomUUID());
+      jobTemplates.put(jobTemplate.getId(), jobTemplate);
+      LOGGER.debug("createJobTemplate - created {}", jobTemplate);
       return jobTemplate;
     }
   }
@@ -84,7 +103,12 @@ public class SessionImpl implements Session {
     if (!initialized) {
       throw new NoActiveSessionException();
     } else {
-      jobTemplates.remove(((JobTemplateImpl) jt).getId());
+      JobTemplate removedJT = jobTemplates.remove(((JobTemplateImpl) jt).getId());
+      if (removedJT != null) {
+        LOGGER.debug("deleteJobTemplate - deleted {}", removedJT);
+      } else {
+        LOGGER.debug("deleteJobTemplate - template {} not found", jt);
+      }
     }
   }
 
@@ -93,10 +117,11 @@ public class SessionImpl implements Session {
     if (!initialized) {
       throw new NoActiveSessionException();
     } else {
-      JobExecutor jobExecutor = new JobExecutor((JobTemplateImpl) jt);
-      jobExecutors.put(jobExecutor.getId(), jobExecutor);
-      jobExecutorService.submit(jobExecutor);
-      return jobExecutor.getId();
+      JobExecutionTask jet = new JobExecutionTask((JobTemplateImpl) jt);
+      JobExecutionFuture jef = (JobExecutionFuture) jobExecutorService.submit(jet);
+      jobExecutors.put(jet.getId(), jef);
+      LOGGER.debug("runJob - running {}", jet);
+      return jet.getId();
     }
   }
 
@@ -106,11 +131,12 @@ public class SessionImpl implements Session {
       throw new NoActiveSessionException();
     } else {
       List<String> results = new ArrayList<>();
-      for(int i = start; i < end; i += incr) {
-        JobExecutor jobExecutor = new JobExecutor((JobTemplateImpl) jt, i);
-        jobExecutors.put(jobExecutor.getId(), jobExecutor);
-        jobExecutorService.submit(jobExecutor);
-        results.add(jobExecutor.getId());
+      for (int i = start; i < end; i += incr) {
+        JobExecutionTask jet = new JobExecutionTask((JobTemplateImpl) jt, i);
+        JobExecutionFuture jef = (JobExecutionFuture) jobExecutorService.submit(jet);
+        jobExecutors.put(jet.getId(), jef);
+        results.add(jet.getId());
+        LOGGER.debug("runBulkJobs - running {}", jet);
       }
       return results;
     }
@@ -119,19 +145,63 @@ public class SessionImpl implements Session {
   @Override
   public void control(String jobId, int action) throws DrmaaException {
     // TODO Auto-generated method stub
-
   }
 
   @Override
   public void synchronize(List<String> jobIds, long timeout, boolean dispose) throws DrmaaException {
-    // TODO Auto-generated method stub
-
+    if (!initialized) {
+      throw new NoActiveSessionException();
+    } else {
+      Collection<String> actualJobIds = jobIds;
+      if (jobIds.size() == 1 && JOB_IDS_SESSION_ALL.equals(jobIds.get(0))) {
+        actualJobIds = jobExecutors.keySet();
+      }
+      for (String jobId : actualJobIds) {
+        JobExecutionFuture jef = jobExecutors.get(jobId);
+        if (jef != null) {
+          try {
+            jef.get(timeout, TimeUnit.SECONDS);
+          } catch (CancellationException e) {
+            // ignore, fact that job was cancelled should be reflected in JobInfo
+          } catch (InterruptedException | ExecutionException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          } catch (TimeoutException e) {
+            throw new ExitTimeoutException("Timeout waiting for " + jef.getId());
+          }
+        } else {
+          throw new InvalidJobException("Job not found for id " + jobId);
+        }
+      }
+    }
   }
 
   @Override
   public JobInfo wait(String jobId, long timeout) throws DrmaaException {
-    // TODO Auto-generated method stub
-    return null;
+    if (!initialized) {
+      throw new NoActiveSessionException();
+    } else {
+      String actualJobId = jobId;
+      if (JOB_IDS_SESSION_ANY.equals(jobId) && !jobExecutors.isEmpty()) {
+        actualJobId = jobExecutors.keySet().iterator().next();
+      }
+      JobExecutionFuture jef = jobExecutors.get(actualJobId);
+      if (jef != null) {
+        try {
+          jef.get(timeout, TimeUnit.SECONDS);
+        } catch (CancellationException e) {
+          // ignore, fact that job was cancelled should be reflected in JobInfo
+        } catch (InterruptedException | ExecutionException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        } catch (TimeoutException e) {
+          throw new ExitTimeoutException("Timeout waiting for " + jef.getId());
+        }
+      } else {
+        throw new InvalidJobException("Job not found for id " + actualJobId);
+      }
+      return null;
+    }
   }
 
   @Override
@@ -142,7 +212,7 @@ public class SessionImpl implements Session {
 
   @Override
   public String getContact() {
-    return "localhost";
+    return contact;
   }
 
   @Override
@@ -159,5 +229,4 @@ public class SessionImpl implements Session {
   public String getDrmaaImplementation() {
     return "org.dawnsci.drmaa.executor";
   }
-
 }

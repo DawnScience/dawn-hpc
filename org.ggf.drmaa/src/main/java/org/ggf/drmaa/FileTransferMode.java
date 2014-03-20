@@ -37,6 +37,7 @@
 
 package org.ggf.drmaa;
 
+import java.beans.ConstructorProperties;
 import java.io.Serializable;
 
 /**
@@ -71,6 +72,7 @@ public class FileTransferMode implements Serializable, Cloneable {
    * @param outputStream whether to transfer output stream files
    * @param errorStream whether to transfer error stream files
    */
+  @ConstructorProperties({"inputStream","outputStream","errorStream"})
   public FileTransferMode(boolean inputStream, boolean outputStream, boolean errorStream) {
     this.errorStream = errorStream;
     this.inputStream = inputStream;

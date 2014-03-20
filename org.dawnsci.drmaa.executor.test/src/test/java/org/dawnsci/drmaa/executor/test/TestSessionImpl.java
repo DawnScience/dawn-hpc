@@ -2,7 +2,9 @@ package org.dawnsci.drmaa.executor.test;
 
 import static org.junit.Assert.*;
 
-import org.dawnsci.drmaa.executor.JobTemplateImpl;
+import java.util.Arrays;
+
+import org.dawnsci.drmaa.common.JobTemplateImpl;
 import org.dawnsci.drmaa.executor.SessionImpl;
 import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.JobTemplate;
@@ -16,7 +18,7 @@ public class TestSessionImpl {
 
   @Before
   public void setUp() throws Exception {
-    session = new SessionImpl();
+    session = new SessionImpl(3);
   }
 
   @After
@@ -71,7 +73,8 @@ public class TestSessionImpl {
     session.init(null);
     JobTemplate jobTemplate = session.createJobTemplate();
     jobTemplate.setRemoteCommand("notepad");
-    session.runJob(jobTemplate);
+    String jobId = session.runJob(jobTemplate);
+    session.synchronize(Arrays.asList(jobId), 10, true);
     Thread.sleep(1000);
   }
 

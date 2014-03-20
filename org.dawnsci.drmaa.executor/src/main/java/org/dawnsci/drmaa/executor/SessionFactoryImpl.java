@@ -41,7 +41,7 @@ public class SessionFactoryImpl extends SessionFactory {
   public SessionImpl getSession() {
     synchronized (this) {
       if (session == null) {
-        session = new SessionImpl();
+        session = new SessionImpl(3);
       }
     }
     return session;
