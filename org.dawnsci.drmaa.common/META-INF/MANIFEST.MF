@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DRMAA Common classes
+Bundle-SymbolicName: org.dawnsci.drmaa.common
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: iSencia
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Import-Package: org.ggf.drmaa;version="1.0.0"
+Export-Package: org.dawnsci.drmaa.common;version="1.0.0"
