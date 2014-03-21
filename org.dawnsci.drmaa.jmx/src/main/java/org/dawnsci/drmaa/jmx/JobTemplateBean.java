@@ -15,7 +15,6 @@
  */
 package org.dawnsci.drmaa.jmx;
 
-import java.beans.ConstructorProperties;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;

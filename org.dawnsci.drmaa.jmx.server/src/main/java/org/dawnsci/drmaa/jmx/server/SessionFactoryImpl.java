@@ -17,63 +17,79 @@ package org.dawnsci.drmaa.jmx.server;
 
 import java.lang.management.ManagementFactory;
 
-import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ * @author erwindl
+ *
+ */
 public class SessionFactoryImpl implements SessionFactoryMXBean {
+  private final static Logger LOGGER = LoggerFactory.getLogger(SessionFactoryImpl.class);
 
   static final String SESSIONFACTORY_MXBEAN_NAME = "org.dawnsci.drmaa:type=SessionFactory";
-  static final String SESSION_MXBEAN_NAME = "org.dawnsci.drmaa:type=Session";
 
   private SessionFactory localSessionFactory;
   private Session localSession;
 
   private SessionImpl remoteSession;
 
-  private MBeanServer mbeanServer;
   private ObjectName sessionFactoryMxbeanName;
-  private ObjectName sessionMxbeanName;
 
   public void setLocalSessionFactory(SessionFactory localSessionFactory) {
+    LOGGER.debug("Set local DRMAA SessionFactory {}", localSessionFactory);
     this.localSessionFactory = localSessionFactory;
   }
 
   public void activate() throws Exception {
-    mbeanServer = ManagementFactory.getPlatformMBeanServer();
+    LOGGER.trace("activate() - entry");
     sessionFactoryMxbeanName = new ObjectName(SESSIONFACTORY_MXBEAN_NAME);
-    mbeanServer.registerMBean(this, sessionFactoryMxbeanName);
+    ManagementFactory.getPlatformMBeanServer().registerMBean(this, sessionFactoryMxbeanName);
+    LOGGER.info("Activated {}", sessionFactoryMxbeanName);
+    LOGGER.trace("activate() - exit");
   }
 
   public void deactivate() throws Exception {
-    if (mbeanServer != null) {
-      if (sessionFactoryMxbeanName != null)
-        mbeanServer.unregisterMBean(sessionFactoryMxbeanName);
-      if (sessionMxbeanName != null)
-        mbeanServer.unregisterMBean(sessionMxbeanName);
+    LOGGER.trace("deactivate() - entry");
+    if (sessionFactoryMxbeanName != null) {
+      ManagementFactory.getPlatformMBeanServer().unregisterMBean(sessionFactoryMxbeanName);
+      LOGGER.info("Deactivated {}", sessionFactoryMxbeanName);
     }
-    remoteSession = null;
+    if (remoteSession != null) {
+      try {
+        remoteSession.exit();
+      } catch (Exception e) {
+        LOGGER.error("", e);
+      }
+      remoteSession = null;
+    }
     if (localSession != null) {
       localSession.exit();
     }
+    LOGGER.trace("deactivate() - exit");
   }
 
   @Override
   public SessionMXBean createSession() throws Exception {
+    LOGGER.trace("createSession() - entry");
     synchronized (this) {
       if (localSession == null && localSessionFactory != null) {
         localSession = localSessionFactory.getSession();
+        LOGGER.info("Created local DRMAA Session {}", localSession);
       }
       if (remoteSession == null) {
         remoteSession = new SessionImpl(localSession);
-        sessionMxbeanName = new ObjectName(SESSION_MXBEAN_NAME);
-        mbeanServer.registerMBean(remoteSession, sessionMxbeanName);
+        remoteSession.registerMXBean();
       } else if (remoteSession.getLocalSession() == null && localSession != null) {
         remoteSession.setLocalSession(localSession);
       }
     }
+    LOGGER.trace("createSession() - exit");
     return remoteSession;
   }
 }
