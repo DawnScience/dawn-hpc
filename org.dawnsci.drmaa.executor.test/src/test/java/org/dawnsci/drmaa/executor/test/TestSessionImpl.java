@@ -2,7 +2,9 @@ package org.dawnsci.drmaa.executor.test;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.dawnsci.drmaa.common.JobTemplateImpl;
 import org.dawnsci.drmaa.executor.SessionImpl;
@@ -73,6 +75,22 @@ public class TestSessionImpl {
     session.init(null);
     JobTemplate jobTemplate = session.createJobTemplate();
     jobTemplate.setRemoteCommand("notepad");
+    String jobId = session.runJob(jobTemplate);
+    session.synchronize(Arrays.asList(jobId), 10, true);
+    Thread.sleep(1000);
+  }
+
+  @Test
+  public void testRunModel() throws DrmaaException, InterruptedException {
+    session.init(null);
+    JobTemplate jobTemplate = session.createJobTemplate();
+    jobTemplate.setRemoteCommand("java");
+    List<String> args = new ArrayList<>();
+    args.add("-jar");
+    args.add("C:/temp/dls_trials/bin/PasserelleRuntime.jar");
+    args.add("C:/temp/dls_trials/models/AnalysisMockFlow.moml");
+    args.add("jobID=2");
+    jobTemplate.setArgs(args);
     String jobId = session.runJob(jobTemplate);
     session.synchronize(Arrays.asList(jobId), 10, true);
     Thread.sleep(1000);
