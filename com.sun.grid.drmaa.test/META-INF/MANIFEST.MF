@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: SGE Test and HowTo
+Bundle-SymbolicName: com.sun.grid.drmaa.test
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: SUN
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Import-Package: org.ggf.drmaa;version="1.0.0"
