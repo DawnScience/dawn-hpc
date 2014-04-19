@@ -42,12 +42,13 @@ public class Howto1_1 {
       try {
          session.init("");
          String contact = session.getContact();
+         System.out.println("Got drmaa contact "+contact);
          session.exit();
          
          session.init(contact);
          session.exit();
       } catch (DrmaaException e) {
-         System.out.println("Error: " + e.getMessage());
+         System.err.println("Error: " + e.getMessage());
       }
    }
 }

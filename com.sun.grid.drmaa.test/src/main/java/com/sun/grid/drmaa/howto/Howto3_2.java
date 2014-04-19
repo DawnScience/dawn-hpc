@@ -49,7 +49,7 @@ public class Howto3_2 {
       try {
          session.init("");
          JobTemplate jt = session.createJobTemplate();
-         jt.setRemoteCommand("sleeper.sh");
+         jt.setRemoteCommand("sleep");
          jt.setArgs(Collections.singletonList("5"));
          
          int start = 1;

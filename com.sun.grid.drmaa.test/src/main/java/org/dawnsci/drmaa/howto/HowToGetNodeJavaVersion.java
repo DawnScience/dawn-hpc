@@ -28,10 +28,9 @@
  *
  ************************************************************************/
 /*___INFO__MARK_END__*/
-package com.sun.grid.drmaa.howto;
+package org.dawnsci.drmaa.howto;
 
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.ggf.drmaa.DrmaaException;
@@ -39,33 +38,30 @@ import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
 
-public class Howto3_1 {
-   public static void main(String[] args) {
-      SessionFactory factory = SessionFactory.getFactory();
-      Session session = factory.getSession();
+public class HowToGetNodeJavaVersion {
+
+  public static void main(String[] args) {
+    
+    SessionFactory factory = SessionFactory.getFactory();
+    Session session = factory.getSession();
+
+    try {
+      session.init("");
+      JobTemplate jt = session.createJobTemplate();
+      jt.setRemoteCommand("java");
+      List<String> jobArgs = new ArrayList<String>();
+      jobArgs.add("-version");
+      jt.setArgs(jobArgs);
+
+      String id = session.runJob(jt);
+
+      System.out.println("Your job has been submitted with id " + id);
+
+      session.deleteJobTemplate(jt);
       
-      try {
-         session.init("");
-         JobTemplate jt = session.createJobTemplate();
-         jt.setRemoteCommand("sleep");
-         jt.setArgs(Collections.singletonList("5"));
-         
-         List<String> ids = session.runBulkJobs(jt, 1, 30, 2);
-         Iterator<String> i = ids.iterator();
-         
-         while (i.hasNext()) {
-            System.out.println("Your job has been submitted with id " + i.next());
-         }
-         
-         session.deleteJobTemplate(jt);
-         session.synchronize(Collections.singletonList(Session.JOB_IDS_SESSION_ALL),
-               Session.TIMEOUT_WAIT_FOREVER, true);
-         
-         System.out.println("All jobs have finished.");
-         
-         session.exit();
-      } catch (DrmaaException e) {
-         System.out.println("Error: " + e.getMessage());
-      }
-   }
+      session.exit();
+    } catch (DrmaaException e) {
+      System.out.println("Error: " + e.getMessage());
+    }
+  }
 }

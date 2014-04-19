@@ -44,8 +44,8 @@ public class Howto2 {
       try {
          session.init("");
          JobTemplate jt = session.createJobTemplate();
-         jt.setRemoteCommand("sleeper.sh");
-         jt.setArgs(Collections.singletonList("5"));
+         jt.setRemoteCommand("sleep");
+         jt.setArgs(Collections.singletonList("20"));
          
          String id = session.runJob(jt);
          
