@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="org.dawnsci.passerelle.cluster.actor.clustersvcholder">
+   <implementation class="org.dawnsci.passerelle.cluster.actor.internal.WorkflowServiceHolder"/>
+   <reference bind="setClusterService" unbind="unsetClusterService" cardinality="1..1" interface="org.dawnsci.passerelle.cluster.service.IWorkflowClusterService" 
+   	name="ClusterService" policy="dynamic"/>
+</scr:component>

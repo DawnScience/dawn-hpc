@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.dawnsci.passerelle.cluster.actor.internal;
+package org.dawnsci.passerelle.cluster.service;
 
 import java.io.File;
 

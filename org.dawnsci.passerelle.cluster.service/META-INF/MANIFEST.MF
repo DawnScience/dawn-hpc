@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DAWN Workflow Cluster Service API
+Bundle-SymbolicName: org.dawnsci.passerelle.cluster.service
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Diamond LS
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Export-Package: org.dawnsci.passerelle.cluster.service

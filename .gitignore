@@ -2,3 +2,5 @@
 /org.dawnsci.passerelle.cluster.actor.test/target
 /org.dawnsci.passerelle.cluster.actor/target
 /org.dawnsci.passerelle.cluster.actor.test/datafiles
+/org.dawnsci.passerelle.cluster.service/target
+/org.dawnsci.passerelle.cluster.service.drmaa/target

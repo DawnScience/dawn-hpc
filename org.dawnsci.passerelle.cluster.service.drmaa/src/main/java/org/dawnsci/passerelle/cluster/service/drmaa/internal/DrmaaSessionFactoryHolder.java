@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dawnsci.passerelle.cluster.actor.internal;
+package org.dawnsci.passerelle.cluster.service.drmaa.internal;
 
 import org.ggf.drmaa.SessionFactory;
 import org.slf4j.Logger;
