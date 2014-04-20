@@ -28,6 +28,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.dawnsci.drmaa.common.JobInfoImpl;
 import org.dawnsci.drmaa.common.JobTemplateImpl;
 import org.dawnsci.drmaa.executor.impl.JobExecutionFuture;
 import org.dawnsci.drmaa.executor.impl.JobExecutionTask;
@@ -36,6 +37,7 @@ import org.ggf.drmaa.AlreadyActiveSessionException;
 import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.ExitTimeoutException;
 import org.ggf.drmaa.InvalidJobException;
+import org.ggf.drmaa.InvalidJobTemplateException;
 import org.ggf.drmaa.JobInfo;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.NoActiveSessionException;
@@ -82,7 +84,7 @@ public class SessionImpl implements Session {
       throw new NoActiveSessionException();
     } else {
       LOGGER.info("Exiting DRMAA Executor-based Session with contact {}", contact);
-      for(JobTemplate removedJT : jobTemplates.values()) {
+      for (JobTemplate removedJT : jobTemplates.values()) {
         deleteJobTemplate(removedJT);
       }
       initialized = false;
@@ -120,6 +122,7 @@ public class SessionImpl implements Session {
     if (!initialized) {
       throw new NoActiveSessionException();
     } else {
+      validateJobTemplate(jt);
       JobExecutionTask jet = new JobExecutionTask((JobTemplateImpl) jt);
       JobExecutionFuture jef = (JobExecutionFuture) jobExecutorService.submit(jet);
       jobExecutors.put(jet.getId(), jef);
@@ -128,11 +131,19 @@ public class SessionImpl implements Session {
     }
   }
 
+  private void validateJobTemplate(JobTemplate jt) throws InvalidJobTemplateException {
+    UUID jobId = ((JobTemplateImpl) jt).getId();
+    if (jobId == null || !jobTemplates.containsKey(jobId)) {
+      throw new InvalidJobTemplateException("Unknown JobTemplate ID " + jobId);
+    }
+  }
+
   @Override
   public List<String> runBulkJobs(JobTemplate jt, int start, int end, int incr) throws DrmaaException {
     if (!initialized) {
       throw new NoActiveSessionException();
     } else {
+      validateJobTemplate(jt);
       List<String> results = new ArrayList<>();
       for (int i = start; i < end; i += incr) {
         JobExecutionTask jet = new JobExecutionTask((JobTemplateImpl) jt, i);
@@ -148,6 +159,7 @@ public class SessionImpl implements Session {
   @Override
   public void control(String jobId, int action) throws DrmaaException {
     // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("control() action not implemented for executor-based DRMAA session");
   }
 
   @Override
@@ -176,6 +188,9 @@ public class SessionImpl implements Session {
           throw new InvalidJobException("Job not found for id " + jobId);
         }
       }
+      if(dispose) {
+        jobExecutors.clear();
+      }
     }
   }
 
@@ -188,10 +203,11 @@ public class SessionImpl implements Session {
       if (JOB_IDS_SESSION_ANY.equals(jobId) && !jobExecutors.isEmpty()) {
         actualJobId = jobExecutors.keySet().iterator().next();
       }
-      JobExecutionFuture jef = jobExecutors.get(actualJobId);
+      JobExecutionFuture jef = jobExecutors.remove(actualJobId);
+      int exitStatus = 0;
       if (jef != null) {
         try {
-          jef.get(timeout, TimeUnit.SECONDS);
+          exitStatus = jef.get(timeout, TimeUnit.SECONDS);
         } catch (CancellationException e) {
           // ignore, fact that job was cancelled should be reflected in JobInfo
         } catch (InterruptedException | ExecutionException e) {
@@ -203,14 +219,35 @@ public class SessionImpl implements Session {
       } else {
         throw new InvalidJobException("Job not found for id " + actualJobId);
       }
-      return null;
+      return new JobInfoImpl(actualJobId, jef.isDone(), exitStatus, jef.isCancelled());
     }
   }
 
   @Override
   public int getJobProgramStatus(String jobId) throws DrmaaException {
-    // TODO Auto-generated method stub
-    return 0;
+    if (!initialized) {
+      throw new NoActiveSessionException();
+    } else {
+      JobExecutionFuture jef = jobExecutors.get(jobId);
+      if (jef != null) {
+        if(!jef.isDone()) {
+          return Session.RUNNING;
+        } else if(jef.isCancelled()){
+          return Session.USER_SYSTEM_SUSPENDED;
+        } else {
+          try {
+            int exitStatus = jef.get(1, TimeUnit.MILLISECONDS);
+            return (exitStatus==0)?Session.DONE : Session.FAILED;
+          } catch (ExecutionException e) {
+            return Session.FAILED;
+          } catch (InterruptedException | TimeoutException e) {
+            return Session.RUNNING;
+          }
+        }
+      } else {
+        return Session.UNDETERMINED;
+      }
+    }
   }
 
   @Override
