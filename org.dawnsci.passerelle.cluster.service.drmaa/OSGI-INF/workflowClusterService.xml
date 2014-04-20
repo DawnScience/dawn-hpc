@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activate" deactivate="deactivate" name="org.dawnsci.passerelle.cluster.service.drmaa">
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activate" deactivate="deactivate" immediate="true" name="org.dawnsci.passerelle.cluster.service.drmaa">
    <implementation class="org.dawnsci.passerelle.cluster.service.drmaa.DrmaaWorkflowClusterService"/>
    <service>
       <provide interface="org.dawnsci.passerelle.cluster.service.IWorkflowClusterService"/>
