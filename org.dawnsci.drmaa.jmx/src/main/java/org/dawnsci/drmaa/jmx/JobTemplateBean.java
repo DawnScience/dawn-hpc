@@ -84,13 +84,8 @@ public class JobTemplateBean {
   private boolean joinFiles;
   private String transferFiles;
 
-  
   public JobTemplateBean() {
-    
-    System.out.println("!!!! default constructor");
   }
-
-
 
   /**
    * Creates a new instance of JobTemplateImpl
@@ -101,19 +96,22 @@ public class JobTemplateBean {
   public JobTemplateBean(String id) {
     this.id = id;
   }
-  
-  
+
+  public JobTemplateBean(JobTemplate source) {
+
+  }
 
   public String getId() {
     return id;
   }
-  
+
   /**
    * to keep JMX MXbean conventions happy
+   * 
    * @param id
    */
   public void setId(String id) {
-    this.id=id;
+    this.id = id;
   }
 
   public void setRemoteCommand(String remoteCommand) {
@@ -126,7 +124,9 @@ public class JobTemplateBean {
 
   public void setArgs(List<String> args) {
     this.args.clear();
-    this.args.addAll(args);
+    if (args != null) {
+      this.args.addAll(args);
+    }
   }
 
   public List<String> getArgs() {
@@ -156,7 +156,9 @@ public class JobTemplateBean {
 
   public void setJobEnvironment(Map<String, String> env) {
     this.env.clear();
-    this.env.putAll(env);
+    if (env != null) {
+      this.env.putAll(env);
+    }
   }
 
   public Map<String, String> getJobEnvironment() {
@@ -189,7 +191,9 @@ public class JobTemplateBean {
 
   public void setEmail(Set<String> email) {
     this.emailAddresses.clear();
-    this.emailAddresses.addAll(email);
+    if (email != null) {
+      this.emailAddresses.addAll(email);
+    }
   }
 
   public Set<String> getEmail() {
@@ -253,21 +257,21 @@ public class JobTemplateBean {
   }
 
   public void setTransferFiles(FileTransferMode mode) {
-    StringBuffer buf = new StringBuffer();
-
-    if (mode.getInputStream()) {
-      buf.append('i');
+    if (mode == null) {
+      this.transferFiles = null;
+    } else {
+      StringBuffer buf = new StringBuffer();
+      if (mode.getInputStream()) {
+        buf.append('i');
+      }
+      if (mode.getOutputStream()) {
+        buf.append('o');
+      }
+      if (mode.getErrorStream()) {
+        buf.append('e');
+      }
+      this.transferFiles = buf.toString();
     }
-
-    if (mode.getOutputStream()) {
-      buf.append('o');
-    }
-
-    if (mode.getErrorStream()) {
-      buf.append('e');
-    }
-
-    this.transferFiles = buf.toString();
   }
 
   public FileTransferMode getTransferFiles() {
@@ -288,14 +292,14 @@ public class JobTemplateBean {
   public Set<String> getAttributeNames() {
     return supportedAttributeNames;
   }
-  
+
   /**
    * to keep JMX MXbean conventions happy
    * 
    * @param attrNames
    */
   public void setAttributeNames(Set<String> attrNames) {
-    
+
   }
 
   /**
@@ -328,29 +332,55 @@ public class JobTemplateBean {
     return "JobTemplate [id=" + id + ", jobName=" + jobName + ", remoteCommand=" + remoteCommand + "]";
   }
 
-  public void pushData(JobTemplate localJt) throws DrmaaException {
-    localJt.setArgs(getArgs());
-    localJt.setBlockEmail(getBlockEmail());
-    localJt.setEmail(getEmail());
-    localJt.setErrorPath(getErrorPath());
-    localJt.setInputPath(getInputPath());
-    localJt.setJobCategory(getJobCategory());
-    localJt.setJobEnvironment(getJobEnvironment());
-    localJt.setJobName(getJobName());
-    localJt.setJobSubmissionState(getJobSubmissionState());
-    localJt.setJoinFiles(getJoinFiles());
-    localJt.setNativeSpecification(getNativeSpecification());
-    localJt.setOutputPath(getOutputPath());
-    localJt.setRemoteCommand(getRemoteCommand());
-    if (getStartTime() != null) {
-      PartialTimestampFormat ptsf = new PartialTimestampFormat();
-      try {
-        localJt.setStartTime(ptsf.parse(getStartTime()));
-      } catch (ParseException e) {
-        throw new InternalException("startTime property is unparsable");
+  public void pullDataFrom(JobTemplate localJt) throws DrmaaException {
+    if (localJt != null) {
+      setArgs(localJt.getArgs());
+      setBlockEmail(localJt.getBlockEmail());
+      setEmail(localJt.getEmail());
+      setErrorPath(localJt.getErrorPath());
+      setInputPath(localJt.getInputPath());
+      setJobCategory(localJt.getJobCategory());
+      setJobEnvironment(localJt.getJobEnvironment());
+      setJobName(localJt.getJobName());
+      setJobSubmissionState(localJt.getJobSubmissionState());
+      setJoinFiles(localJt.getJoinFiles());
+      setNativeSpecification(localJt.getNativeSpecification());
+      setOutputPath(localJt.getOutputPath());
+      setRemoteCommand(localJt.getRemoteCommand());
+      if (localJt.getStartTime() != null) {
+        PartialTimestampFormat ptsf = new PartialTimestampFormat();
+        setStartTime(ptsf.format(localJt.getStartTime()));
       }
+      setTransferFiles(localJt.getTransferFiles());
+      setWorkingDirectory(localJt.getWorkingDirectory());
     }
-    localJt.setTransferFiles(getTransferFiles());
-    localJt.setWorkingDirectory(getWorkingDirectory());
+  }
+
+  public void pushDataTo(JobTemplate localJt) throws DrmaaException {
+    if (localJt != null) {
+      localJt.setArgs(getArgs());
+      localJt.setBlockEmail(getBlockEmail());
+      localJt.setEmail(getEmail());
+      localJt.setErrorPath(getErrorPath());
+      localJt.setInputPath(getInputPath());
+      localJt.setJobCategory(getJobCategory());
+      localJt.setJobEnvironment(getJobEnvironment());
+      localJt.setJobName(getJobName());
+      localJt.setJobSubmissionState(getJobSubmissionState());
+      localJt.setJoinFiles(getJoinFiles());
+      localJt.setNativeSpecification(getNativeSpecification());
+      localJt.setOutputPath(getOutputPath());
+      localJt.setRemoteCommand(getRemoteCommand());
+      if (getStartTime() != null) {
+        PartialTimestampFormat ptsf = new PartialTimestampFormat();
+        try {
+          localJt.setStartTime(ptsf.parse(getStartTime()));
+        } catch (ParseException e) {
+          throw new InternalException("startTime property is unparsable");
+        }
+      }
+      localJt.setTransferFiles(getTransferFiles());
+      localJt.setWorkingDirectory(getWorkingDirectory());
+    }
   }
 }

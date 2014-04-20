@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dawnsci.drmaa.jmx.server;
+package org.dawnsci.drmaa.jmx;
 
 /**
  * The interface for a JMX-based remote access to a DRMAA SessionFactory.

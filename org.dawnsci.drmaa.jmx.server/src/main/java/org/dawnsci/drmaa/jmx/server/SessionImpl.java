@@ -26,9 +26,12 @@ import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
+import org.dawnsci.drmaa.jmx.JobInfoBean;
 import org.dawnsci.drmaa.jmx.JobTemplateBean;
+import org.dawnsci.drmaa.jmx.SessionMXBean;
 import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.InvalidJobTemplateException;
+import org.ggf.drmaa.JobInfo;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.NoActiveSessionException;
 import org.ggf.drmaa.Session;
@@ -39,11 +42,11 @@ import org.slf4j.LoggerFactory;
 /**
  * 
  * @author erwindl
- *
+ * 
  */
 public class SessionImpl implements SessionMXBean {
   private final static Logger LOGGER = LoggerFactory.getLogger(SessionImpl.class);
-  
+
   static final String SESSION_MXBEAN_NAME = "org.dawnsci.drmaa:type=Session";
   private ObjectName sessionMxbeanName;
 
@@ -75,6 +78,7 @@ public class SessionImpl implements SessionMXBean {
     } else {
       JobTemplate localJt = localSession.createJobTemplate();
       JobTemplateBean jt = new JobTemplateBean(UUID.randomUUID().toString());
+      jt.pullDataFrom(localJt);
       jobTemplates.put(jt.getId(), jt);
       localJobTemplates.put(jt.getId(), localJt);
       LOGGER.debug("Created JobTemplateBean {}", jt.getId());
@@ -103,20 +107,53 @@ public class SessionImpl implements SessionMXBean {
 
   @Override
   public String runJob(JobTemplateBean jt) throws DrmaaException {
-    LOGGER.trace("runJob() - entry : {}", jt.getId());
+    String jobId = jt.getId();
+    LOGGER.trace("runJob() - entry : {}", jobId);
     if (localSession == null) {
       throw new NoActiveSessionException();
     } else {
-      JobTemplate localJt = localJobTemplates.get(jt.getId());
-      jt.pushData(localJt);
-      // TODO check what state mgmt is needed in here to track running jobs
-      String processId = localSession.runJob(localJt);
-      LOGGER.debug("Run Job with process ID {}", processId);
-      LOGGER.trace("runJob() - exit : {}", jt.getId());
-      return processId;
+      JobTemplate localJt = localJobTemplates.get(jobId);
+      if (localJt != null) {
+        jt.pushDataTo(localJt);
+        // TODO check what state mgmt is needed in here to track running jobs
+        String processId = localSession.runJob(localJt);
+        LOGGER.debug("Run Job with process ID {}", processId);
+        LOGGER.trace("runJob() - exit : {}", jobId);
+        return processId;
+      } else {
+        throw new InvalidJobTemplateException("Unknown JobTemplate ID " + jobId);
+      }
     }
   }
 
+  @Override
+  public JobInfoBean wait(String jobId, long timeout) throws DrmaaException {
+    LOGGER.trace("wait() - entry : {} - timeout {}", jobId, timeout);
+    if (localSession == null) {
+      throw new NoActiveSessionException();
+    } else {
+      JobInfo jobInfo = localSession.wait(jobId, timeout);
+      JobInfoBean jb = new JobInfoBean(jobId);
+      jb.pullDataFrom(jobInfo);
+      LOGGER.debug("Got JobInfo {}", jb);
+      LOGGER.trace("wait() - exit : {}", jobId);
+      return jb;
+    }
+  }
+
+  @Override
+  public int getJobProgramStatus(String jobId) throws DrmaaException {
+    LOGGER.trace("getJobProgramStatus() - entry : {}", jobId);
+    int jobStatus = 0;
+    if (localSession == null) {
+      throw new NoActiveSessionException();
+    } else {
+      jobStatus = localSession.getJobProgramStatus(jobId);
+    }
+    LOGGER.trace("getJobProgramStatus() - exit : {} - status {}", jobId, jobStatus);
+    return jobStatus;
+  }
+  
   @Override
   public void init(String contact) throws DrmaaException {
     LOGGER.trace("init() - entry : {}", contact);

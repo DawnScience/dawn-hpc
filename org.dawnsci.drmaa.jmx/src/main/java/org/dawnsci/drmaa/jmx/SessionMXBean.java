@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dawnsci.drmaa.jmx.server;
+package org.dawnsci.drmaa.jmx;
 
+import org.dawnsci.drmaa.jmx.JobInfoBean;
 import org.dawnsci.drmaa.jmx.JobTemplateBean;
 import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.Version;
@@ -25,6 +26,7 @@ public interface SessionMXBean {
   void deleteJobTemplate(JobTemplateBean jt) throws DrmaaException;
   
   String runJob(JobTemplateBean jt) throws DrmaaException;
+  JobInfoBean wait(String jobId, long timeout) throws DrmaaException;
   
   void init(String contact) throws DrmaaException;
   void exit() throws DrmaaException;
@@ -34,4 +36,5 @@ public interface SessionMXBean {
   Version getVersion() throws DrmaaException;
   String getDrmSystem() throws DrmaaException;
   String getDrmaaImplementation() throws DrmaaException;
+  int getJobProgramStatus(String jobId) throws DrmaaException;
 }

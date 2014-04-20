@@ -15,10 +15,9 @@
  */
 package org.dawnsci.drmaa.jmx.server;
 
-import java.lang.management.ManagementFactory;
-
-import javax.management.ObjectName;
-
+import org.dawnsci.drmaa.jmx.SessionFactoryMXBean;
+import org.dawnsci.drmaa.jmx.SessionMXBean;
+import org.dawnsci.drmaa.jmx.connection.ConnectionManager;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
 import org.slf4j.Logger;
@@ -32,14 +31,12 @@ import org.slf4j.LoggerFactory;
 public class SessionFactoryImpl implements SessionFactoryMXBean {
   private final static Logger LOGGER = LoggerFactory.getLogger(SessionFactoryImpl.class);
 
-  static final String SESSIONFACTORY_MXBEAN_NAME = "org.dawnsci.drmaa:type=SessionFactory";
-
   private SessionFactory localSessionFactory;
   private Session localSession;
 
   private SessionImpl remoteSession;
-
-  private ObjectName sessionFactoryMxbeanName;
+  
+  private ConnectionManager connMgr;
 
   public void setLocalSessionFactory(SessionFactory localSessionFactory) {
     LOGGER.debug("Set local DRMAA SessionFactory {}", localSessionFactory);
@@ -48,17 +45,15 @@ public class SessionFactoryImpl implements SessionFactoryMXBean {
 
   public void activate() throws Exception {
     LOGGER.trace("activate() - entry");
-    sessionFactoryMxbeanName = new ObjectName(SESSIONFACTORY_MXBEAN_NAME);
-    ManagementFactory.getPlatformMBeanServer().registerMBean(this, sessionFactoryMxbeanName);
-    LOGGER.info("Activated {}", sessionFactoryMxbeanName);
+    connMgr = new ConnectionManager();
+    connMgr.startSessionFactoryMXBean(this);
     LOGGER.trace("activate() - exit");
   }
 
   public void deactivate() throws Exception {
     LOGGER.trace("deactivate() - entry");
-    if (sessionFactoryMxbeanName != null) {
-      ManagementFactory.getPlatformMBeanServer().unregisterMBean(sessionFactoryMxbeanName);
-      LOGGER.info("Deactivated {}", sessionFactoryMxbeanName);
+    if(connMgr!=null) {
+      connMgr.stopSessionFactoryMXBean(this);
     }
     if (remoteSession != null) {
       try {

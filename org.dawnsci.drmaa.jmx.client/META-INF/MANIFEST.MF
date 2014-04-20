@@ -1,13 +1,12 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: DRMAA JMX Server
-Bundle-SymbolicName: org.dawnsci.drmaa.jmx.server
+Bundle-Name: DRMAA remoting JMX Client
+Bundle-SymbolicName: org.dawnsci.drmaa.jmx.client
 Bundle-Version: 1.0.0.qualifier
-Bundle-Vendor: iSencia
+Bundle-Vendor: Diamond LS
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Service-Component: OSGI-INF/component.xml
 Import-Package: org.dawnsci.drmaa.common;version="1.0.0",
  org.dawnsci.drmaa.jmx;version="1.0.0",
  org.dawnsci.drmaa.jmx.connection;version="1.0.0",
- org.ggf.drmaa;version="1.0.0",
- org.slf4j;version="[1.7.6,1.7.7)"
-Service-Component: OSGI-INF/component.xml
+ org.ggf.drmaa;version="1.0.0"
