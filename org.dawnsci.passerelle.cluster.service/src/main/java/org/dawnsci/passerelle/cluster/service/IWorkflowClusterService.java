@@ -29,6 +29,7 @@ public interface IWorkflowClusterService {
    * Remark that the job submission does not guarantee its execution.
    * Job status will be reported via the listener.
    * 
+   * @param initiator the party/person/system initiating the job submission. E.g. a user ID.
    * @param correlationID an ID set by the application so it can correlate listener notifications to its original job submission
    * @param workflowSpec the name of the workflow to be used
    * @param dataSpec
@@ -39,5 +40,5 @@ public interface IWorkflowClusterService {
    * 
    * @throws JobRefusedException when the job can not be accepted for whatever reason
    */
-  AnalysisJobBean submitAnalysisJob(String correlationID, String workflowSpec, SliceBean dataSpec, long timeout, TimeUnit unit, JobListener listener) throws JobRefusedException;
+  AnalysisJobBean submitAnalysisJob(String initiator, String correlationID, String workflowSpec, SliceBean dataSpec, long timeout, TimeUnit unit, JobListener listener) throws JobRefusedException;
 }

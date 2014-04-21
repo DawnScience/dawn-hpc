@@ -136,7 +136,11 @@ public class ClusterNodeTransformer extends Actor {
       AnalysisJobBean job = WorkflowServiceHolder
           .getInstance()
           .getClusterService()
-          .submitAnalysisJob("", workflowFileParameter.asFile().getAbsolutePath(), slice, timeout, timeUnit, new AnalysisJobListener(message.getID(), response));
+          .submitAnalysisJob(System.getProperty("user.name", "DAWN"), 
+              Long.toString(message.getID()), 
+              workflowFileParameter.asFile().getAbsolutePath(), 
+              slice, timeout, timeUnit, 
+              new AnalysisJobListener(message.getID(), response));
       wipQueue.add(job.getCorrelationID());
     } catch (IllegalActionException e) {
       throw new ProcessingException(ErrorCode.ACTOR_EXECUTION_ERROR, "Error reading actor parameters", this, message, e);

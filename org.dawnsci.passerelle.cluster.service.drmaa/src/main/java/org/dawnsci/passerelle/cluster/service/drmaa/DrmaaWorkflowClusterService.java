@@ -17,20 +17,23 @@
 package org.dawnsci.passerelle.cluster.service.drmaa;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.dawnsci.passerelle.cluster.service.AnalysisJobBean;
 import org.dawnsci.passerelle.cluster.service.IWorkflowClusterService;
 import org.dawnsci.passerelle.cluster.service.JobListener;
 import org.dawnsci.passerelle.cluster.service.JobRefusedException;
 import org.dawnsci.passerelle.cluster.service.SliceBean;
-import org.dawnsci.passerelle.cluster.service.drmaa.internal.DrmaaSessionFactoryHolder;
 import org.dawnsci.passerelle.cluster.service.drmaa.internal.DrmaaJobWaiterService;
+import org.dawnsci.passerelle.cluster.service.drmaa.internal.DrmaaSessionFactoryHolder;
 import org.ggf.drmaa.AlreadyActiveSessionException;
 import org.ggf.drmaa.DrmaaException;
-import org.ggf.drmaa.JobInfo;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.NoActiveSessionException;
 import org.ggf.drmaa.Session;
@@ -42,19 +45,21 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class DrmaaWorkflowClusterService implements IWorkflowClusterService {
+  // TODO point to real DAWN cluster node runtimes && shared job folder
   private static final String JOB_RUNTIME_JAR = "C:/temp/dls_trials/bin/PasserelleRuntime.jar";
-
-  private static final String JOB_OUTPUTFOLDER = "C:/temp/dls_trials/output";
+  private static final String JOB_FOLDER = "C:/temp/dls_trials/jobs";
 
   private final static Logger LOGGER = LoggerFactory.getLogger(DrmaaWorkflowClusterService.class);
-  
+
   private boolean active;
+  
+  private volatile AtomicLong jobIdCounter;
 
   /**
    * The DRMAA session
    */
   private Session session;
-  
+
   private DrmaaJobWaiterService jobWaiterService;
 
   public void activate() throws Exception {
@@ -66,7 +71,12 @@ public class DrmaaWorkflowClusterService implements IWorkflowClusterService {
     } catch (AlreadyActiveSessionException e) {
       // ignore as this could just imply that DRMAA is already ready for us
     }
-    jobWaiterService = new DrmaaJobWaiterService(session, JOB_OUTPUTFOLDER);
+    jobWaiterService = new DrmaaJobWaiterService(session, JOB_FOLDER);
+    Properties metaData = readMetaData();
+    if(metaData!=null && metaData.containsKey("jobID")) {
+      String jobIDCtrStart = metaData.getProperty("jobID");
+      jobIdCounter = new AtomicLong(Long.parseLong(jobIDCtrStart)+1);
+    }
     active = true;
     LOGGER.trace("activate() - exit");
   }
@@ -85,17 +95,20 @@ public class DrmaaWorkflowClusterService implements IWorkflowClusterService {
       }
       session = null;
     }
+    // TODO write last jobID in metadata
     LOGGER.info("DrmaaWorkflowClusterService deactivated");
     LOGGER.trace("deactivate() - exit");
   }
 
   @Override
-  public AnalysisJobBean submitAnalysisJob(String correlationID, String workflowSpec, SliceBean dataSpec, long timeout, TimeUnit unit, JobListener listener) throws JobRefusedException {
-    LOGGER.trace("submitAnalysisJob() - entry : job {} with workflow {} for data {}", new Object[] { correlationID, workflowSpec, dataSpec });
-    if(!active) {
+  public AnalysisJobBean submitAnalysisJob(String initiator, String correlationID, String workflowSpec, SliceBean dataSpec, long timeout, TimeUnit unit,
+      JobListener listener) throws JobRefusedException {
+    LOGGER.trace("submitAnalysisJob() - entry : {} submits job {} with workflow {} for data {}", 
+        new Object[] { initiator, correlationID, workflowSpec, dataSpec });
+    if (!active) {
       throw new JobRefusedException("DrmaaWorkflowClusterService not active");
     }
-    AnalysisJobBean jobBean = new AnalysisJobBean(1L, correlationID, dataSpec);
+    AnalysisJobBean jobBean = new AnalysisJobBean(initiator, jobIdCounter.getAndIncrement(), correlationID, dataSpec);
     try {
       JobTemplate jobTemplate = session.createJobTemplate();
       jobTemplate.setRemoteCommand("java");
@@ -106,7 +119,13 @@ public class DrmaaWorkflowClusterService implements IWorkflowClusterService {
       args.add("jobID=" + jobBean.getJobID());
       args.add("dataFile=" + dataSpec.getFilePath());
       args.add("dataSet=" + dataSpec.getDataSet());
-      args.add("outputFolder=" + JOB_OUTPUTFOLDER);
+      args.add("dataSlice=" + dataSpec.getSlice());
+      String jobFolderStr = JOB_FOLDER + File.separatorChar + initiator + File.separatorChar + jobBean.getJobID();
+      File jobFolder = new File(jobFolderStr);
+      if(!jobFolder.exists()) {
+        jobFolder.mkdirs();
+      }
+      args.add("jobFolder=" + jobFolderStr);
       jobTemplate.setArgs(args);
       String drmaaJobId = session.runJob(jobTemplate);
       jobBean.setInternalJobID(drmaaJobId);
@@ -119,5 +138,30 @@ public class DrmaaWorkflowClusterService implements IWorkflowClusterService {
     } catch (DrmaaException e) {
       throw new JobRefusedException("Error submitting job", e);
     }
+  }
+
+  /**
+   * @return metadata props for the cluster jobs; returns empty properties when no metadata is found
+   */
+  private Properties readMetaData() {
+    Properties jobsMetaDataProps = new Properties();
+    File metaDataFile = new File(JOB_FOLDER, ".metadata");
+    if (metaDataFile.exists()) {
+      Reader metaDataReader = null;
+      try {
+        metaDataReader = new FileReader(metaDataFile);
+        jobsMetaDataProps.load(metaDataReader);
+      } catch (Exception e) {
+
+      } finally {
+        if (metaDataReader != null) {
+          try {
+            metaDataReader.close();
+          } catch (Exception e) {
+          }
+        }
+      }
+    }
+    return jobsMetaDataProps;
   }
 }

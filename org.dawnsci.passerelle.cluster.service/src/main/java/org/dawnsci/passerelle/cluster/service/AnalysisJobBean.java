@@ -25,6 +25,7 @@ package org.dawnsci.passerelle.cluster.service;
 public class AnalysisJobBean implements IJob {
   
   private Long jobID;
+  private String initiator;
   private String correlationID;
   private String internalJobID;
   private SliceBean inputSlice;
@@ -35,7 +36,8 @@ public class AnalysisJobBean implements IJob {
   
   private SliceBean outputSlice;
 
-  public AnalysisJobBean(Long jobID, String correlationID, SliceBean slice) {
+  public AnalysisJobBean(String initiator, Long jobID, String correlationID, SliceBean slice) {
+    this.initiator = initiator;
     this.jobID = jobID;
     this.correlationID = correlationID;
     this.inputSlice = slice;
@@ -53,6 +55,15 @@ public class AnalysisJobBean implements IJob {
     return internalJobID;
   }
   
+  
+  public String getInitiator() {
+    return initiator;
+  }
+
+  public void setInitiator(String initiator) {
+    this.initiator = initiator;
+  }
+
   public void setInternalJobID(String internalJobID) {
     this.internalJobID = internalJobID;
   }
