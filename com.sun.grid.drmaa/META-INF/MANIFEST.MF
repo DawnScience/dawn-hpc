@@ -7,3 +7,7 @@ Bundle-Vendor: Diamond Light Source
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Import-Package: org.ggf.drmaa;version="[1.0.0,2.0.0)"
 Service-Component: OSGI-INF/component.xml
+Bundle-NativeCode: lib/libdrmaa.so ;
+  osname=linux ;
+  processor=x86-64,
+ *
