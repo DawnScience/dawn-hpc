@@ -17,6 +17,7 @@
 package org.dawnsci.passerelle.cluster.service;
 
 import java.io.File;
+import java.util.Properties;
 
 
 /**
@@ -37,6 +38,23 @@ public class SliceBean {
     this.slice = slice;
     this.shape = shape;
     this.file = file;
+  }
+  
+  public static SliceBean fromProperties(Properties props) {
+    String dataSet = props.getProperty("dataSet");
+    String slice = props.getProperty("slice");
+    String shape=props.getProperty("shape");
+    String file=props.getProperty("file");
+    return new SliceBean(dataSet, slice, shape, file!=null ? new File(file):null);
+  }
+  
+  public Properties toProperties() {
+    Properties props = new Properties();
+    props.put("dataSet", getDataSet());
+    props.put("slice", getSlice());
+    props.put("shape", getShape());
+    props.put("file", getFilePath());
+    return props;
   }
 
   public String getDataSet() {

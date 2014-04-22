@@ -17,6 +17,9 @@
 package org.dawnsci.passerelle.cluster.service.drmaa.internal;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.Reader;
+import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -45,13 +48,10 @@ public class DrmaaJobWaiterService {
 
   private Session session;
 
-  private String jobOutputFolder;
-
   private boolean active;
 
-  public DrmaaJobWaiterService(Session session, String jobOutputFolder) {
+  public DrmaaJobWaiterService(Session session) {
     this.session = session;
-    this.jobOutputFolder = jobOutputFolder;
     jobWaiterExecutor.submit(new JobWaiter());
     active = true;
     LOGGER.info("DrmaaJobWaiterService started");
@@ -140,10 +140,27 @@ public class DrmaaJobWaiterService {
       }
     }
 
-    // TODO make this real
-    private SliceBean getOutputSlice(AnalysisJobBean job) {
-      return new SliceBean(job.getInputSlice().getDataSet() + "_analysed", job.getInputSlice().getSlice(), job.getInputSlice().getShape(), new File(
-          jobOutputFolder, "result" + job.getJobID()));
+   private SliceBean getOutputSlice(AnalysisJobBean job) {
+      File sliceFile = new File(job.getJobFolder(), "resultSlice.properties");
+      Properties props = new Properties();
+      if (sliceFile.exists()) {
+        Reader sliceReader = null;
+        try {
+          sliceReader = new FileReader(sliceFile);
+          props.load(sliceReader);
+          return SliceBean.fromProperties(props);
+        } catch (Exception e) {
+          e.printStackTrace();
+        } finally {
+          if (sliceReader != null) {
+            try {
+              sliceReader.close();
+            } catch (Exception e) {
+            }
+          }
+        }
+      }
+      return null;
     }
   }
 }

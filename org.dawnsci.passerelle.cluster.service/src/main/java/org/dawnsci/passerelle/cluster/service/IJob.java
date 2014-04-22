@@ -10,19 +10,13 @@ public interface IJob {
 
   /**
    * 
-   * @return the Job ID as assigned by the IWorkflowClusterService
-   */
-  Long getJobID();
-  
-  /**
-   * 
    * @return the job's correlation ID as set by the application during its job submission
    */
   String getCorrelationID();
 
   /**
    * 
-   * @return the Job ID as assigned internally by the cluster implementation itself
+   * @return the Job ID as assigned internally by the cluster service
    */
   String getInternalJobID();
   

@@ -16,37 +16,34 @@
 
 package org.dawnsci.passerelle.cluster.service;
 
-
+import java.io.File;
 
 /**
  * @author erwindl
- *
+ * 
  */
 public class AnalysisJobBean implements IJob {
-  
-  private Long jobID;
+
   private String initiator;
   private String correlationID;
   private String internalJobID;
   private SliceBean inputSlice;
-  
+
+  private File jobFolder;
+
   private boolean finished;
   private int exitCode;
   private String exitMessage;
-  
+
   private SliceBean outputSlice;
 
-  public AnalysisJobBean(String initiator, Long jobID, String correlationID, SliceBean slice) {
+  public AnalysisJobBean(String initiator, File jobFolder, String correlationID, SliceBean slice) {
     this.initiator = initiator;
-    this.jobID = jobID;
+    this.jobFolder = jobFolder;
     this.correlationID = correlationID;
     this.inputSlice = slice;
   }
 
-  public Long getJobID() {
-    return jobID;
-  }
-  
   public String getCorrelationID() {
     return correlationID;
   }
@@ -54,8 +51,11 @@ public class AnalysisJobBean implements IJob {
   public String getInternalJobID() {
     return internalJobID;
   }
-  
-  
+
+  public File getJobFolder() {
+    return jobFolder;
+  }
+
   public String getInitiator() {
     return initiator;
   }
@@ -71,19 +71,19 @@ public class AnalysisJobBean implements IJob {
   public SliceBean getInputSlice() {
     return inputSlice;
   }
-  
+
   public SliceBean getOutputSlice() {
     return outputSlice;
   }
-  
+
   public void setOutputSlice(SliceBean outputSlice) {
     this.outputSlice = outputSlice;
   }
-  
+
   public boolean isFinished() {
     return finished;
   }
-  
+
   public void setFinished(boolean finished) {
     this.finished = finished;
   }
@@ -91,7 +91,7 @@ public class AnalysisJobBean implements IJob {
   public int getExitCode() {
     return exitCode;
   }
-  
+
   public void setExitCode(int exitCode) {
     this.exitCode = exitCode;
   }
@@ -99,7 +99,7 @@ public class AnalysisJobBean implements IJob {
   public String getExitMessage() {
     return exitMessage;
   }
-  
+
   public void setExitMessage(String exitMessage) {
     this.exitMessage = exitMessage;
   }
@@ -112,7 +112,6 @@ public class AnalysisJobBean implements IJob {
     result = prime * result + ((exitMessage == null) ? 0 : exitMessage.hashCode());
     result = prime * result + (finished ? 1231 : 1237);
     result = prime * result + ((internalJobID == null) ? 0 : internalJobID.hashCode());
-    result = prime * result + ((jobID == null) ? 0 : jobID.hashCode());
     result = prime * result + ((inputSlice == null) ? 0 : inputSlice.hashCode());
     return result;
   }
@@ -140,11 +139,6 @@ public class AnalysisJobBean implements IJob {
         return false;
     } else if (!internalJobID.equals(other.internalJobID))
       return false;
-    if (jobID == null) {
-      if (other.jobID != null)
-        return false;
-    } else if (!jobID.equals(other.jobID))
-      return false;
     if (inputSlice == null) {
       if (other.inputSlice != null)
         return false;
@@ -155,7 +149,7 @@ public class AnalysisJobBean implements IJob {
 
   @Override
   public String toString() {
-    return "AnalysisJobBean [jobID=" + jobID + ", internalJobID=" + internalJobID + ", slice=" + inputSlice + ", finished=" + finished + ", exitCode=" + exitCode
-        + ", exitMessage=" + exitMessage + "]";
+    return "AnalysisJobBean [jobFolder=" + jobFolder + "internalJobID=" + internalJobID + ", slice=" + inputSlice + ", finished=" + finished + ", exitCode="
+        + exitCode + ", exitMessage=" + exitMessage + "]";
   }
 }
