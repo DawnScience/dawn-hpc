@@ -48,10 +48,12 @@ import org.slf4j.LoggerFactory;
 public class ConnectionManager {
   private final static Logger LOGGER = LoggerFactory.getLogger(ConnectionManager.class);
 
+  public static final String DRMAA_JMX_HOST_NAME_PROPERTY_NAME = "org.dawnsci.drmaa.jmx.host.name";
+  public static final String DRMAA_JMX_PORT_PROPERTY_NAME = "org.dawnsci.drmaa.jmx.port";
+  public static final String DRMAA_JMX_CONNECTION_REQUIRED_PROPERTY_NAME = "org.dawnsci.drmaa.jmx.required";
+  
   private static final String REMOTE_DRMAA_SESSIONFACTORY_MXBEAN_NAME = "org.dawnsci.drmaa:type=SessionFactory";
-  private static final String DRMAA_JMX_HOST_NAME_PROPERTY_NAME = "org.dawnsci.drmaa.jmx.host.name";
   private static final String DEFAULT_PORT = "28000";
-  private static final String DRMAA_JMX_PORT_PROPERTY_NAME = "org.dawnsci.drmaa.jmx.port";
   private static final String DRMAA_GATEWAY_URL_PATH = "DrmaaGateway";
 
   private ObjectName sessionFactoryMxbeanName;

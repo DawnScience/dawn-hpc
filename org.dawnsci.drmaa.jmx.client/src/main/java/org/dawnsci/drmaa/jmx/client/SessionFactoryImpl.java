@@ -40,6 +40,7 @@ public class SessionFactoryImpl extends SessionFactory {
     connMgr = new ConnectionManager();
     MBeanServerConnection serverConnection = connMgr.getServerConnection(100);
     sfProxy = JMX.newMXBeanProxy(serverConnection, connMgr.getSessionFactoryMxBeanName(), SessionFactoryMXBean.class);
+    SessionFactory.setFactory(this);
   }
 
   public void deactivate() {
