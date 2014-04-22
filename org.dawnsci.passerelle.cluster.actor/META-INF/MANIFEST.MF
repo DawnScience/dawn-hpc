@@ -7,13 +7,13 @@ Bundle-Activator: org.dawnsci.passerelle.cluster.actor.activator.Activator
 Bundle-Vendor: Diamond LS
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Service-Component: OSGI-INF/workflowClusterServiceHolder.xml
-Import-Package: com.isencia.passerelle.actor;version="8.6.0",
- com.isencia.passerelle.actor.v5;version="8.6.0",
- com.isencia.passerelle.core;version="8.6.0",
- com.isencia.passerelle.ext;version="8.6.0",
- com.isencia.passerelle.ext.impl;version="8.6.0",
- com.isencia.passerelle.message;version="8.6.0",
- com.isencia.passerelle.util.ptolemy;version="8.6.0",
+Import-Package: com.isencia.passerelle.actor;version="8.3.0",
+ com.isencia.passerelle.actor.v5;version="8.3.0",
+ com.isencia.passerelle.core;version="8.3.0",
+ com.isencia.passerelle.ext;version="8.3.0",
+ com.isencia.passerelle.ext.impl;version="8.3.0",
+ com.isencia.passerelle.message;version="8.3.0",
+ com.isencia.passerelle.util.ptolemy;version="8.3.0",
  com.isencia.sherpa.commons,
  org.dawb.passerelle.common,
  org.dawb.passerelle.common.message,
