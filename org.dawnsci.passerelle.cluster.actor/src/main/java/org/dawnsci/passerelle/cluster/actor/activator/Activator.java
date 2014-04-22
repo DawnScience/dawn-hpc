@@ -1,6 +1,8 @@
 package org.dawnsci.passerelle.cluster.actor.activator;
 
 import org.dawnsci.passerelle.cluster.actor.ClusterNodeTransformer;
+import org.dawnsci.passerelle.cluster.actor.JobSliceSink;
+import org.dawnsci.passerelle.cluster.actor.JobSliceSource;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -23,7 +25,11 @@ public class Activator implements BundleActivator {
 		Activator.context = bundleContext;
 		
     apSvcReg = context.registerService(ModelElementClassProvider.class.getName(), 
-        new DefaultModelElementClassProvider(ClusterNodeTransformer.class), null);
+        new DefaultModelElementClassProvider(
+            ClusterNodeTransformer.class,
+            JobSliceSource.class,
+            JobSliceSink.class
+            ), null);
 		
     try {
       Class<? extends BundleActivator> svcTester = 

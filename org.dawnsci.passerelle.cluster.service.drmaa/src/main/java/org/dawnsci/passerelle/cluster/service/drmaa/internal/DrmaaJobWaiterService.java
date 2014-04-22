@@ -150,7 +150,7 @@ public class DrmaaJobWaiterService {
           props.load(sliceReader);
           return SliceBean.fromProperties(props);
         } catch (Exception e) {
-          e.printStackTrace();
+          LOGGER.error("Error loading slice from result file", e);
         } finally {
           if (sliceReader != null) {
             try {

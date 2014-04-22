@@ -127,8 +127,7 @@ public class ClusterNodeTransformer extends Actor {
     } catch (Exception e) {
       throw new ProcessingException(ErrorCode.MSG_CONTENT_TYPE_ERROR, "Error getting DataMessageComponent from received message", this, message, e);
     }
-//  TODO  SliceBean slice = new SliceBean(dmc.getScalar("dataSet"), dmc.getScalar("slice"), dmc.getScalar("shape"), new File(dmc.getScalar("file_path")));
-    SliceBean slice = new SliceBean("set", dmc.getScalar("slice"), dmc.getScalar("shape"), new File(dmc.getScalar("file_path")));
+    SliceBean slice = new SliceBean(dmc.getScalar("dataSet"), dmc.getScalar("slice"), dmc.getScalar("shape"), new File(dmc.getScalar("file_path")));
 
     try {
       long timeout = ((IntToken) timeoutParameter.getToken()).longValue();
