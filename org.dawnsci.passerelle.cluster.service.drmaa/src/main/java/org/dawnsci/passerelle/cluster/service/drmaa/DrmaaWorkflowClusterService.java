@@ -61,11 +61,20 @@ public class DrmaaWorkflowClusterService implements IWorkflowClusterService {
   private Session session;
 
   private DrmaaJobWaiterService jobWaiterService;
+  private DrmaaSessionFactoryHolder sessFactoryHolder;
+
+  public void setSessionFactoryHolder(DrmaaSessionFactoryHolder sessFactoryHolder) {
+    this.sessFactoryHolder = sessFactoryHolder;
+  }
+
+  public void unsetSessionFactoryHolder(DrmaaSessionFactoryHolder sessFactoryHolder) {
+    this.sessFactoryHolder = null;
+  }
 
   public void activate() throws Exception {
     LOGGER.trace("activate() - entry");
     try {
-      session = DrmaaSessionFactoryHolder.getInstance().getSessionFactory().getSession();
+      session = sessFactoryHolder.getSessionFactory().getSession();
       session.init(null);
       LOGGER.info("DrmaaWorkflowClusterService activated");
     } catch (AlreadyActiveSessionException e) {

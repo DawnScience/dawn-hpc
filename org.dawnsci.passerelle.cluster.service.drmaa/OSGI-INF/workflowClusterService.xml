@@ -4,4 +4,6 @@
    <service>
       <provide interface="org.dawnsci.passerelle.cluster.service.IWorkflowClusterService"/>
    </service>
+   <reference bind="setSessionFactoryHolder" unbind="unsetSessionFactoryHolder" cardinality="1..1" 
+   interface="org.dawnsci.passerelle.cluster.service.drmaa.internal.DrmaaSessionFactoryHolder" name="SessionFactoryHolder" policy="dynamic"/>
 </scr:component>
