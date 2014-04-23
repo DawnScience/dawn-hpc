@@ -26,16 +26,15 @@ import org.slf4j.LoggerFactory;
 /**
  * 
  * @author erwindl
- *
+ * 
  */
 public class SessionFactoryImpl implements SessionFactoryMXBean {
   private final static Logger LOGGER = LoggerFactory.getLogger(SessionFactoryImpl.class);
 
   private SessionFactory localSessionFactory;
-  private Session localSession;
 
   private SessionImpl remoteSession;
-  
+
   private ConnectionManager connMgr;
 
   public void setLocalSessionFactory(SessionFactory localSessionFactory) {
@@ -52,7 +51,7 @@ public class SessionFactoryImpl implements SessionFactoryMXBean {
 
   public void deactivate() throws Exception {
     LOGGER.trace("deactivate() - entry");
-    if(connMgr!=null) {
+    if (connMgr != null) {
       connMgr.stopSessionFactoryMXBean(this);
     }
     if (remoteSession != null) {
@@ -63,9 +62,6 @@ public class SessionFactoryImpl implements SessionFactoryMXBean {
       }
       remoteSession = null;
     }
-    if (localSession != null) {
-      localSession.exit();
-    }
     LOGGER.trace("deactivate() - exit");
   }
 
@@ -73,18 +69,24 @@ public class SessionFactoryImpl implements SessionFactoryMXBean {
   public SessionMXBean createSession() throws Exception {
     LOGGER.trace("createSession() - entry");
     synchronized (this) {
-      if (localSession == null && localSessionFactory != null) {
-        localSession = localSessionFactory.getSession();
-        LOGGER.info("Created local DRMAA Session {}", localSession);
-      }
       if (remoteSession == null) {
-        remoteSession = new SessionImpl(localSession);
-        remoteSession.registerMXBean();
-      } else if (remoteSession.getLocalSession() == null && localSession != null) {
-        remoteSession.setLocalSession(localSession);
+        if (localSessionFactory != null) {
+          Session localSession = localSessionFactory.getSession();
+          LOGGER.info("Created local DRMAA Session {}", localSession);
+          remoteSession = new SessionImpl(localSession, this);
+          remoteSession.registerMXBean();
+        } else {
+          throw new IllegalStateException("No local session factory");
+        }
       }
     }
     LOGGER.trace("createSession() - exit");
     return remoteSession;
+  }
+  
+  protected void clearSession(SessionImpl session) {
+    if(remoteSession==session) {
+      remoteSession = null;
+    }
   }
 }

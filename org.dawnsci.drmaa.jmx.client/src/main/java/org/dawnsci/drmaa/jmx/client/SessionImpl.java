@@ -38,9 +38,11 @@ import org.ggf.drmaa.Version;
 public class SessionImpl implements Session {
   
   private SessionMXBean remoteSession;
+  private SessionFactoryImpl factory;
   
-  public SessionImpl(SessionMXBean remoteSession) {
+  public SessionImpl(SessionMXBean remoteSession, SessionFactoryImpl factory) {
     this.remoteSession = remoteSession;
+    this.factory = factory;
   }
 
   @Override
@@ -51,6 +53,7 @@ public class SessionImpl implements Session {
   @Override
   public void exit() throws DrmaaException {
     remoteSession.exit();
+    factory.clearSession(this);
   }
 
   @Override

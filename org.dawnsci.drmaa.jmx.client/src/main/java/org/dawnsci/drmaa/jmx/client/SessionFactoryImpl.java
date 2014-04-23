@@ -50,7 +50,7 @@ public class SessionFactoryImpl extends SessionFactory {
   @Override
   public Session getSession() {
     if (sessionImpl == null) {
-      sessionImpl = new SessionImpl(getSessionMXBean());
+      sessionImpl = new SessionImpl(getSessionMXBean(), this);
     }
     return sessionImpl;
   }
@@ -62,6 +62,12 @@ public class SessionFactoryImpl extends SessionFactory {
       return sfProxy.createSession();
     } catch (Exception e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  public void clearSession(SessionImpl session) {
+    if(sessionImpl==session) {
+      sessionImpl = null;
     }
   }
 }

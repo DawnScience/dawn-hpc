@@ -54,14 +54,17 @@ public class SessionImpl implements SessionMXBean {
   private Map<String, JobTemplate> localJobTemplates = new ConcurrentHashMap<>();
 
   private Session localSession;
+  private SessionFactoryImpl factory;
 
   /**
    * construct a JMX-based remote facade on a local DRMAA Session instance.
    * 
    * @param localSession
+   * @param sessionFactoryImpl 
    */
-  public SessionImpl(Session localSession) {
+  public SessionImpl(Session localSession, SessionFactoryImpl factory) {
     this.localSession = localSession;
+    this.factory = factory;
   }
 
   void registerMXBean() throws MalformedObjectNameException, InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException {
@@ -176,6 +179,7 @@ public class SessionImpl implements SessionMXBean {
         LOGGER.error("Error unregistering Session MXBean", e);
       }
     }
+    factory.clearSession(this);
 
     if (localSession == null) {
       throw new NoActiveSessionException();
