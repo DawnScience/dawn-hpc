@@ -107,7 +107,8 @@ public class JobInfoBean {
       setExited(localJi.hasExited());
       setExitStatus(localJi.getExitStatus());
       setSignaled(localJi.hasSignaled());
-      setTerminatingSignal(localJi.getTerminatingSignal());
+      if(isSignaled())
+        setTerminatingSignal(localJi.getTerminatingSignal());
     }
   }
 

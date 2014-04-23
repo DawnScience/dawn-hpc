@@ -175,7 +175,13 @@ public class SessionImpl implements Session {
         JobExecutionFuture jef = jobExecutors.get(jobId);
         if (jef != null) {
           try {
-            jef.get(timeout, TimeUnit.SECONDS);
+            if (timeout >= 0) {
+              // remark that is not exactly the right timeout behaviour
+              // as we're potentially multiplying the total timeout with the nr of jobs
+              jef.get(timeout, TimeUnit.SECONDS);
+            } else {
+              jef.get();
+            }
           } catch (CancellationException e) {
             // ignore, fact that job was cancelled should be reflected in JobInfo
           } catch (InterruptedException | ExecutionException e) {
@@ -188,7 +194,7 @@ public class SessionImpl implements Session {
           throw new InvalidJobException("Job not found for id " + jobId);
         }
       }
-      if(dispose) {
+      if (dispose) {
         jobExecutors.clear();
       }
     }
@@ -207,7 +213,11 @@ public class SessionImpl implements Session {
       int exitStatus = 0;
       if (jef != null) {
         try {
-          exitStatus = jef.get(timeout, TimeUnit.SECONDS);
+          if (timeout >= 0) {
+            exitStatus = jef.get(timeout, TimeUnit.SECONDS);
+          } else {
+            exitStatus = jef.get();
+          }
         } catch (CancellationException e) {
           // ignore, fact that job was cancelled should be reflected in JobInfo
         } catch (InterruptedException | ExecutionException e) {
@@ -230,14 +240,14 @@ public class SessionImpl implements Session {
     } else {
       JobExecutionFuture jef = jobExecutors.get(jobId);
       if (jef != null) {
-        if(!jef.isDone()) {
+        if (!jef.isDone()) {
           return Session.RUNNING;
-        } else if(jef.isCancelled()){
+        } else if (jef.isCancelled()) {
           return Session.USER_SYSTEM_SUSPENDED;
         } else {
           try {
             int exitStatus = jef.get(1, TimeUnit.MILLISECONDS);
-            return (exitStatus==0)?Session.DONE : Session.FAILED;
+            return (exitStatus == 0) ? Session.DONE : Session.FAILED;
           } catch (ExecutionException e) {
             return Session.FAILED;
           } catch (InterruptedException | TimeoutException e) {
