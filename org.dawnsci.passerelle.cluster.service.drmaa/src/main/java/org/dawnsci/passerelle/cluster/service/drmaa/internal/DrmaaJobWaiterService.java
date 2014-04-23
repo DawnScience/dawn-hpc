@@ -159,6 +159,10 @@ public class DrmaaJobWaiterService {
             }
           }
         }
+      } else {
+        // TODO should we assume a predefined name for the data with the result data?
+        // TODO must we pass the input slice info alongside the result data info?
+        return new SliceBean(null, null, null, job.getJobFolder());
       }
       return null;
     }

@@ -247,6 +247,7 @@ public class ClusterNodeTransformer extends Actor {
         ManagedMessage resultMsg = createMessage();
         resultMsg.addCauseID(causeMsgID);
         final DataMessageComponent comp = new DataMessageComponent();
+        // TODO must we pass the input slice info alongside this result data info??
         comp.putScalar(ScalarNames.DATASET, sliceBean.getDataSet());
         comp.putScalar(ScalarNames.SLICE, sliceBean.getSlice());
         comp.putScalar(ScalarNames.SHAPE, sliceBean.getShape());

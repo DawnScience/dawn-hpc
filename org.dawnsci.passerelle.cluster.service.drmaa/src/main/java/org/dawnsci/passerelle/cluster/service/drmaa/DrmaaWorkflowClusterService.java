@@ -134,7 +134,7 @@ public class DrmaaWorkflowClusterService implements IWorkflowClusterService {
       }
       // these are the "real" job-specific arguments
       args.add(workflowSpec);
-      args.add("-DworkingDir=" + jobFolder.getAbsolutePath());
+      args.add("workingDir=" + jobFolder.getAbsolutePath());
       jobTemplate.setArgs(args);
       jobTemplate.setWorkingDirectory(jobFolder.getAbsolutePath());
       
