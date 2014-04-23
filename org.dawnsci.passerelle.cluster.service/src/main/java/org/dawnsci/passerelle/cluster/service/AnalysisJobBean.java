@@ -149,7 +149,7 @@ public class AnalysisJobBean implements IJob {
 
   @Override
   public String toString() {
-    return "AnalysisJobBean [jobFolder=" + jobFolder + "internalJobID=" + internalJobID + ", slice=" + inputSlice + ", finished=" + finished + ", exitCode="
+    return "AnalysisJobBean [jobFolder=" + jobFolder + ", internalJobID=" + internalJobID + ", slice=" + inputSlice + ", finished=" + finished + ", exitCode="
         + exitCode + ", exitMessage=" + exitMessage + "]";
   }
 }

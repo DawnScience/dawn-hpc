@@ -31,6 +31,7 @@ public interface IWorkflowClusterService {
    * 
    * @param initiator the party/person/system initiating the job submission. E.g. a user ID.
    * @param correlationID an ID set by the application so it can correlate listener notifications to its original job submission
+   * @param runtimeSpec the command to start the workflow runtime
    * @param workflowSpec the name of the workflow to be used
    * @param dataSpec
    * @param timeout
@@ -40,5 +41,5 @@ public interface IWorkflowClusterService {
    * 
    * @throws JobRefusedException when the job can not be accepted for whatever reason
    */
-  AnalysisJobBean submitAnalysisJob(String initiator, String correlationID, String workflowSpec, SliceBean dataSpec, long timeout, TimeUnit unit, JobListener listener) throws JobRefusedException;
+  AnalysisJobBean submitAnalysisJob(String initiator, String correlationID, String runtimeSpec, String workflowSpec, SliceBean dataSpec, long timeout, TimeUnit unit, JobListener listener) throws JobRefusedException;
 }

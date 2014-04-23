@@ -361,15 +361,22 @@ public class JobTemplateBean {
       localJt.setArgs(getArgs());
       localJt.setBlockEmail(getBlockEmail());
       localJt.setEmail(getEmail());
-      localJt.setErrorPath(getErrorPath());
-      localJt.setInputPath(getInputPath());
-      localJt.setJobCategory(getJobCategory());
-      localJt.setJobEnvironment(getJobEnvironment());
-      localJt.setJobName(getJobName());
+      if(getErrorPath()!=null)
+        localJt.setErrorPath(getErrorPath());
+      if(getInputPath()!=null)
+        localJt.setInputPath(getInputPath());
+      if(getJobCategory()!=null)
+        localJt.setJobCategory(getJobCategory());
+      if(getJobEnvironment()!=null)
+        localJt.setJobEnvironment(getJobEnvironment());
+      if(getJobName()!=null)
+        localJt.setJobName(getJobName());
       localJt.setJobSubmissionState(getJobSubmissionState());
       localJt.setJoinFiles(getJoinFiles());
-      localJt.setNativeSpecification(getNativeSpecification());
-      localJt.setOutputPath(getOutputPath());
+      if(getNativeSpecification()!=null)
+        localJt.setNativeSpecification(getNativeSpecification());
+      if(getOutputPath()!=null)
+        localJt.setOutputPath(getOutputPath());
       localJt.setRemoteCommand(getRemoteCommand());
       if (getStartTime() != null) {
         PartialTimestampFormat ptsf = new PartialTimestampFormat();
@@ -379,8 +386,10 @@ public class JobTemplateBean {
           throw new InternalException("startTime property is unparsable");
         }
       }
-      localJt.setTransferFiles(getTransferFiles());
-      localJt.setWorkingDirectory(getWorkingDirectory());
+      if(getTransferFiles()!=null)
+        localJt.setTransferFiles(getTransferFiles());
+      if(getWorkingDirectory()!=null)
+        localJt.setWorkingDirectory(getWorkingDirectory());
     }
   }
 }

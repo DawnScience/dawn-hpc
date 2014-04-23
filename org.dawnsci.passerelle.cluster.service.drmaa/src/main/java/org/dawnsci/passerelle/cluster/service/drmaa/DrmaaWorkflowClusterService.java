@@ -33,6 +33,7 @@ import org.dawnsci.passerelle.cluster.service.drmaa.internal.ClusterServiceConfi
 import org.dawnsci.passerelle.cluster.service.drmaa.internal.DrmaaJobWaiterService;
 import org.ggf.drmaa.AlreadyActiveSessionException;
 import org.ggf.drmaa.DrmaaException;
+import org.ggf.drmaa.FileTransferMode;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.NoActiveSessionException;
 import org.ggf.drmaa.Session;
@@ -104,10 +105,10 @@ public class DrmaaWorkflowClusterService implements IWorkflowClusterService {
   }
 
   @Override
-  public AnalysisJobBean submitAnalysisJob(String initiator, String correlationID, String workflowSpec, SliceBean dataSpec, long timeout, TimeUnit unit,
+  public AnalysisJobBean submitAnalysisJob(String initiator, String correlationID, String runtimeSpec, String workflowSpec, SliceBean dataSpec, long timeout, TimeUnit unit,
       JobListener listener) throws JobRefusedException {
-    LOGGER.trace("submitAnalysisJob() - entry : {} submits job {} with workflow {} for data {}", new Object[] { initiator, correlationID, workflowSpec,
-        dataSpec });
+    LOGGER.trace("submitAnalysisJob() - entry : {} submits job {} with runtime {} and workflow {} for data {}", 
+        new Object[] { initiator, correlationID, runtimeSpec, workflowSpec, dataSpec });
     if (!active) {
       throw new JobRefusedException("DrmaaWorkflowClusterService not active");
     }
@@ -119,7 +120,7 @@ public class DrmaaWorkflowClusterService implements IWorkflowClusterService {
     AnalysisJobBean jobBean = new AnalysisJobBean(initiator, jobFolder, correlationID, dataSpec);
     try {
       JobTemplate jobTemplate = session.createJobTemplate();
-      String[] remoteCommandAndArgs = configurer.getNodeRuntimeCommand();
+      String[] remoteCommandAndArgs = runtimeSpec.split(" ");
       jobTemplate.setRemoteCommand(remoteCommandAndArgs[0]);
       List<String> args = new ArrayList<>();
       // these are the standard required arguments tightly linked to the remote command
@@ -131,6 +132,7 @@ public class DrmaaWorkflowClusterService implements IWorkflowClusterService {
       args.add(workflowSpec);
       args.add("jobFolder=" + jobFolder.getAbsolutePath());
       jobTemplate.setArgs(args);
+//      jobTemplate.setTransferFiles(new FileTransferMode(false, false, false));
       
       String drmaaJobId = session.runJob(jobTemplate);
       jobBean.setInternalJobID(drmaaJobId);

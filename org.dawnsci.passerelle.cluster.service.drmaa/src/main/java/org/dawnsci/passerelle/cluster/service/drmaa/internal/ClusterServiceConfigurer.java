@@ -56,15 +56,6 @@ public class ClusterServiceConfigurer {
   }
 
   /**
-   * 
-   * @return the remote command to execute in [0] and any standard required arguments from [1] onwards.
-   */
-  public String[] getNodeRuntimeCommand() {
-    // return new String[] {"runWorkflow.sh"};
-    return new String[] { "java", "-jar", "C:/Users/delerw/dls_trials/bin/PasserelleRuntime.jar" };
-  }
-
-  /**
    * Get Filename minus it's extension if present
    * 
    * @param file File to get filename from

@@ -58,6 +58,7 @@ public class TestClusterActor extends TestCase {
     flow.connect(src, cnt);
     flow.connect(cnt, sink);
     sink.logReceivedMessages.setExpression("true");
+    cnt.runtimeParameter.setExpression("java -jar C:/Users/delerw/dls_trials/bin/PasserelleRuntime.jar");
     cnt.workflowFileParameter.setExpression(testFolder + File.separatorChar + "models" + File.separatorChar + "AnalysisMockFlow.moml");
     // src.datasetName.setExpression("set");
     src.datasetName.setExpression("/entry1/instrument/Pilatus2M/data");

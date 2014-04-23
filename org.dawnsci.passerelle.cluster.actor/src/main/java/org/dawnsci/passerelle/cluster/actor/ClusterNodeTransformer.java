@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import ptolemy.data.IntToken;
 import ptolemy.data.expr.FileParameter;
 import ptolemy.data.expr.Parameter;
+import ptolemy.data.expr.StringParameter;
 import ptolemy.kernel.CompositeEntity;
 import ptolemy.kernel.util.IllegalActionException;
 import ptolemy.kernel.util.NameDuplicationException;
@@ -53,7 +54,6 @@ import com.isencia.passerelle.core.Port;
 import com.isencia.passerelle.core.PortFactory;
 import com.isencia.passerelle.message.ManagedMessage;
 import com.isencia.passerelle.message.MessageException;
-import com.isencia.passerelle.util.ptolemy.DirectoryParameter;
 import com.isencia.passerelle.util.ptolemy.StringChoiceParameter;
 
 /**
@@ -77,9 +77,9 @@ public class ClusterNodeTransformer extends Actor {
   public Port output;
 
   /**
-   * defines the folder where the output files will be written by the cluster job
+   * defines the runtime command to execute the analysis workflow
    */
-  public FileParameter outputFolderParameter;
+  public StringParameter runtimeParameter;
 
   /**
    * defines the model file containing the analysis workflow that must be executed
@@ -100,7 +100,10 @@ public class ClusterNodeTransformer extends Actor {
     input = PortFactory.getInstance().createInputPort(this, DataMessageComponent.class);
     output = PortFactory.getInstance().createOutputPort(this);
 
-    outputFolderParameter = new DirectoryParameter(this, "Output folder");
+    runtimeParameter = new StringParameter(this, "Runtime");
+    runtimeParameter.setExpression("runWorkflow.sh");
+    registerExpertParameter(runtimeParameter);
+    
     workflowFileParameter = new FileParameter(this, "Workflow");
 
     timeoutParameter = new Parameter(this, "timeout", new IntToken(10));
@@ -137,6 +140,7 @@ public class ClusterNodeTransformer extends Actor {
           .getClusterService()
           .submitAnalysisJob(System.getProperty("user.name", "DAWN"), 
               Long.toString(message.getID()), 
+              runtimeParameter.stringValue(),
               workflowFileParameter.asFile().getAbsolutePath(), 
               slice, timeout, timeUnit, 
               new AnalysisJobListener(message.getID(), response));
