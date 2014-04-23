@@ -2,6 +2,7 @@ package org.dawnsci.passerelle.cluster.actor;
 
 public interface ScalarNames {
 
+  String WORKINGDIR = "workingDir";
   String DATASET = "datasetName";
   String SLICE = "slice";
   String SHAPE = "shape";

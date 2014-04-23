@@ -3,11 +3,18 @@ package org.dawnsci.passerelle.cluster.actor;
 import java.io.File;
 import java.io.FileReader;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import org.dawb.passerelle.common.DatasetConstants;
+import org.dawb.passerelle.common.message.IVariable;
+import org.dawb.passerelle.common.message.IVariableProvider;
+import org.dawb.passerelle.common.message.Variable;
+import org.dawb.passerelle.common.message.IVariable.VARIABLE_TYPE;
 import org.dawb.passerelle.common.parameter.ParameterUtils;
 import org.dawb.passerelle.common.utils.SubstituteUtils;
 import org.dawnsci.passerelle.cluster.service.SliceBean;
@@ -31,7 +38,7 @@ import com.isencia.passerelle.core.PortFactory;
 import com.isencia.passerelle.message.ManagedMessage;
 import com.isencia.passerelle.message.MessageException;
 
-public class JobSliceSource extends Actor {
+public class JobSliceSource extends Actor implements IVariableProvider {
   private static final long serialVersionUID = 3078492950853091843L;
   private final static Logger LOGGER = LoggerFactory.getLogger(JobSliceSink.class);
 
@@ -54,6 +61,23 @@ public class JobSliceSource extends Actor {
   }
 
   @Override
+  public List<IVariable> getInputVariables() {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public List<IVariable> getOutputVariables() {
+    final List<IVariable> ret = new ArrayList<>(5);
+    ret.add(new Variable(ScalarNames.WORKINGDIR, VARIABLE_TYPE.SCALAR, "working directory", String.class));
+    ret.add(new Variable(ScalarNames.DATASET, VARIABLE_TYPE.SCALAR, "dataset name", String.class));
+    ret.add(new Variable(ScalarNames.SLICE, VARIABLE_TYPE.SCALAR, "slice in NCD compatible format", String.class));
+    ret.add(new Variable(ScalarNames.FILENAME, VARIABLE_TYPE.SCALAR, "data file name", String.class));
+    ret.add(new Variable(ScalarNames.FILEPATH, VARIABLE_TYPE.SCALAR, "path of the data file", String.class));
+
+    return ret;
+  }
+
+  @Override
   protected void process(ActorContext ctxt, ProcessRequest request, ProcessResponse response) throws ProcessingException {
     try {
       SliceBean sliceBean;
@@ -67,6 +91,7 @@ public class JobSliceSource extends Actor {
       if (sliceBean != null) {
         ManagedMessage resultMsg = createMessage();
         final DataMessageComponent comp = new DataMessageComponent();
+        comp.putScalar(ScalarNames.WORKINGDIR, sliceFile.getParent());
         comp.putScalar(ScalarNames.DATASET, sliceBean.getDataSet());
         comp.putScalar(ScalarNames.SLICE, sliceBean.getSlice());
         comp.putScalar(ScalarNames.SHAPE, sliceBean.getShape());
@@ -97,10 +122,10 @@ public class JobSliceSource extends Actor {
 
   private String substituteSystemProps(String expression) {
     Properties properties = System.getProperties();
-    Map<String,String> map = new HashMap<String,String>();
-    for (final String name: properties.stringPropertyNames())
+    Map<String, String> map = new HashMap<String, String>();
+    for (final String name : properties.stringPropertyNames())
       map.put(name, properties.getProperty(name));
-    
+
     return SubstituteUtils.substitute(expression, map);
   }
 
