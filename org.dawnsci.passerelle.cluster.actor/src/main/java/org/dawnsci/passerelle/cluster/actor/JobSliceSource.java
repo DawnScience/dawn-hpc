@@ -12,11 +12,10 @@ import java.util.Properties;
 
 import org.dawb.passerelle.common.DatasetConstants;
 import org.dawb.passerelle.common.message.IVariable;
+import org.dawb.passerelle.common.message.IVariable.VARIABLE_TYPE;
 import org.dawb.passerelle.common.message.IVariableProvider;
 import org.dawb.passerelle.common.message.Variable;
-import org.dawb.passerelle.common.message.IVariable.VARIABLE_TYPE;
 import org.dawb.passerelle.common.parameter.ParameterUtils;
-import org.dawb.passerelle.common.utils.SubstituteUtils;
 import org.dawnsci.passerelle.cluster.service.SliceBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,7 +82,8 @@ public class JobSliceSource extends Actor implements IVariableProvider {
       SliceBean sliceBean;
       File sliceFile = null;
       try {
-        sliceFile = getSliceFile();
+        String sliceFileStr = substituteSystemProps(sliceFileParameter);
+        sliceFile = new File(sliceFileStr);
         sliceBean = getOutputSlice(sliceFile);
       } catch (Exception e) {
         throw new ProcessingException(ErrorCode.ACTOR_EXECUTION_ERROR, "Error getting slice file from parameter", this, e);
@@ -112,21 +112,13 @@ public class JobSliceSource extends Actor implements IVariableProvider {
     }
   }
 
-  File getSliceFile() throws Exception {
-    File sliceFile;
-    String sliceFileStr = ParameterUtils.getSubstituedValue(sliceFileParameter);
-    sliceFileStr = substituteSystemProps(sliceFileStr);
-    sliceFile = new File(sliceFileStr);
-    return sliceFile;
-  }
-
-  private String substituteSystemProps(String expression) {
+  private String substituteSystemProps(StringParameter param) throws Exception {
     Properties properties = System.getProperties();
     Map<String, String> map = new HashMap<String, String>();
     for (final String name : properties.stringPropertyNames())
       map.put(name, properties.getProperty(name));
 
-    return SubstituteUtils.substitute(expression, map);
+    return ParameterUtils.getSubstituedValue(param,null,map);
   }
 
   private SliceBean getOutputSlice(File sliceFile) {
