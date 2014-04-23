@@ -3,14 +3,18 @@ package org.dawnsci.passerelle.cluster.actor;
 import java.io.File;
 import java.io.FileReader;
 import java.io.Reader;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.dawb.passerelle.common.DatasetConstants;
+import org.dawb.passerelle.common.parameter.ParameterUtils;
+import org.dawb.passerelle.common.utils.SubstituteUtils;
 import org.dawnsci.passerelle.cluster.service.SliceBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ptolemy.data.expr.FileParameter;
+import ptolemy.data.expr.StringParameter;
 import ptolemy.kernel.CompositeEntity;
 import ptolemy.kernel.util.IllegalActionException;
 import ptolemy.kernel.util.NameDuplicationException;
@@ -36,12 +40,12 @@ public class JobSliceSource extends Actor {
   /**
    * defines the file where the actor must read the job's input slice definition
    */
-  public FileParameter sliceInputFileParameter;
+  public StringParameter sliceFileParameter;
 
   public JobSliceSource(CompositeEntity container, String name) throws IllegalActionException, NameDuplicationException {
     super(container, name);
     output = PortFactory.getInstance().createOutputPort(this);
-    sliceInputFileParameter = new FileParameter(this, "Slice file");
+    sliceFileParameter = new StringParameter(this, "Slice file");
   }
 
   @Override
@@ -55,19 +59,19 @@ public class JobSliceSource extends Actor {
       SliceBean sliceBean;
       File sliceFile = null;
       try {
-        sliceFile = sliceInputFileParameter.asFile();
+        sliceFile = getSliceFile();
         sliceBean = getOutputSlice(sliceFile);
-      } catch (IllegalActionException e) {
+      } catch (Exception e) {
         throw new ProcessingException(ErrorCode.ACTOR_EXECUTION_ERROR, "Error getting slice file from parameter", this, e);
       }
       if (sliceBean != null) {
         ManagedMessage resultMsg = createMessage();
         final DataMessageComponent comp = new DataMessageComponent();
-        comp.putScalar("dataSet", sliceBean.getDataSet());
-        comp.putScalar("slice", sliceBean.getSlice());
-        comp.putScalar("shape", sliceBean.getShape());
-        comp.putScalar("file_name", sliceBean.getFile().getName());
-        comp.putScalar("file_path", sliceBean.getFile().getAbsolutePath());
+        comp.putScalar(ScalarNames.DATASET, sliceBean.getDataSet());
+        comp.putScalar(ScalarNames.SLICE, sliceBean.getSlice());
+        comp.putScalar(ScalarNames.SHAPE, sliceBean.getShape());
+        comp.putScalar(ScalarNames.FILENAME, sliceBean.getFile().getName());
+        comp.putScalar(ScalarNames.FILEPATH, sliceBean.getFile().getAbsolutePath());
 
         try {
           resultMsg.setBodyContent(comp, DatasetConstants.CONTENT_TYPE_DATA);
@@ -81,6 +85,23 @@ public class JobSliceSource extends Actor {
     } finally {
       requestFinish();
     }
+  }
+
+  File getSliceFile() throws Exception {
+    File sliceFile;
+    String sliceFileStr = ParameterUtils.getSubstituedValue(sliceFileParameter);
+    sliceFileStr = substituteSystemProps(sliceFileStr);
+    sliceFile = new File(sliceFileStr);
+    return sliceFile;
+  }
+
+  private String substituteSystemProps(String expression) {
+    Properties properties = System.getProperties();
+    Map<String,String> map = new HashMap<String,String>();
+    for (final String name: properties.stringPropertyNames())
+      map.put(name, properties.getProperty(name));
+    
+    return SubstituteUtils.substitute(expression, map);
   }
 
   private SliceBean getOutputSlice(File sliceFile) {

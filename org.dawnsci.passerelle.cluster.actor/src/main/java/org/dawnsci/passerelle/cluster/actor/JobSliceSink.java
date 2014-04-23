@@ -3,14 +3,18 @@ package org.dawnsci.passerelle.cluster.actor;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.dawb.passerelle.common.message.MessageUtils;
+import org.dawb.passerelle.common.parameter.ParameterUtils;
+import org.dawb.passerelle.common.utils.SubstituteUtils;
 import org.dawnsci.passerelle.cluster.service.SliceBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ptolemy.data.expr.FileParameter;
+import ptolemy.data.expr.StringParameter;
 import ptolemy.kernel.CompositeEntity;
 import ptolemy.kernel.util.IllegalActionException;
 import ptolemy.kernel.util.NameDuplicationException;
@@ -35,12 +39,12 @@ public class JobSliceSink extends Actor{
   /**
    * defines the file where the actor must write the job result slice definition
    */
-  public FileParameter sliceResultFileParameter;
+  public StringParameter sliceFileParameter;
 
   public JobSliceSink(CompositeEntity container, String name) throws IllegalActionException, NameDuplicationException {
     super(container, name);
     input = PortFactory.getInstance().createInputPort(this, DataMessageComponent.class);
-    sliceResultFileParameter = new FileParameter(this, "Slice file");
+    sliceFileParameter = new StringParameter(this, "Slice file");
   }
   
   @Override
@@ -57,12 +61,33 @@ public class JobSliceSink extends Actor{
     } catch (Exception e) {
       throw new ProcessingException(ErrorCode.MSG_CONTENT_TYPE_ERROR, "Error getting DataMessageComponent from received message", this, message, e);
     }
-    SliceBean slice = new SliceBean(dmc.getScalar("dataSet"), dmc.getScalar("slice"), dmc.getScalar("shape"), new File(dmc.getScalar("file_path")));
+    SliceBean slice = new SliceBean(
+        dmc.getScalar(ScalarNames.DATASET), 
+        dmc.getScalar(ScalarNames.SLICE), 
+        dmc.getScalar(ScalarNames.SHAPE), 
+        new File(dmc.getScalar(ScalarNames.FILEPATH)));
     try {
-      writeSliceBean(sliceResultFileParameter.asFile(), slice);
-    } catch (IllegalActionException e) {
+      writeSliceBean(getSliceFile(), slice);
+    } catch (Exception e) {
       throw new ProcessingException(ErrorCode.ACTOR_EXECUTION_ERROR, "Failed to write slice "+slice, this, e);
     }
+  }
+
+  File getSliceFile() throws Exception {
+    File sliceFile;
+    String sliceFileStr = ParameterUtils.getSubstituedValue(sliceFileParameter);
+    sliceFileStr = substituteSystemProps(sliceFileStr);
+    sliceFile = new File(sliceFileStr);
+    return sliceFile;
+  }
+
+  private String substituteSystemProps(String expression) {
+    Properties properties = System.getProperties();
+    Map<String,String> map = new HashMap<String,String>();
+    for (final String name: properties.stringPropertyNames())
+      map.put(name, properties.getProperty(name));
+    
+    return SubstituteUtils.substitute(expression, map);
   }
 
   private void writeSliceBean(File sliceFile, SliceBean sliceBean) {

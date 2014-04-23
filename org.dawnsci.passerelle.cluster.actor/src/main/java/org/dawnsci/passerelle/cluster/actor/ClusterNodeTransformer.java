@@ -130,7 +130,11 @@ public class ClusterNodeTransformer extends Actor {
     } catch (Exception e) {
       throw new ProcessingException(ErrorCode.MSG_CONTENT_TYPE_ERROR, "Error getting DataMessageComponent from received message", this, message, e);
     }
-    SliceBean slice = new SliceBean(dmc.getScalar("dataSet"), dmc.getScalar("slice"), dmc.getScalar("shape"), new File(dmc.getScalar("file_path")));
+    SliceBean slice = new SliceBean(
+        dmc.getScalar(ScalarNames.DATASET), 
+        dmc.getScalar(ScalarNames.SLICE), 
+        dmc.getScalar(ScalarNames.SHAPE), 
+        new File(dmc.getScalar(ScalarNames.FILEPATH)));
 
     try {
       long timeout = ((IntToken) timeoutParameter.getToken()).longValue();
@@ -216,11 +220,11 @@ public class ClusterNodeTransformer extends Actor {
         ManagedMessage resultMsg = createMessage();
         resultMsg.addCauseID(causeMsgID);
         final DataMessageComponent comp = new DataMessageComponent();
-        comp.putScalar("dataSet", sliceBean.getDataSet());
-        comp.putScalar("slice", sliceBean.getSlice());
-        comp.putScalar("shape", sliceBean.getShape());
-        comp.putScalar("file_name", sliceBean.getFile().getName());
-        comp.putScalar("file_path", sliceBean.getFile().getAbsolutePath());
+        comp.putScalar(ScalarNames.DATASET, sliceBean.getDataSet());
+        comp.putScalar(ScalarNames.SLICE, sliceBean.getSlice());
+        comp.putScalar(ScalarNames.SHAPE, sliceBean.getShape());
+        comp.putScalar(ScalarNames.FILENAME, sliceBean.getFile().getName());
+        comp.putScalar(ScalarNames.FILEPATH, sliceBean.getFile().getAbsolutePath());
 
         try {
           resultMsg.setBodyContent(comp, DatasetConstants.CONTENT_TYPE_DATA);
