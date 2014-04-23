@@ -114,6 +114,7 @@ public class JobSliceSource extends Actor implements IVariableProvider {
       if (jobSpec != null) {
         ManagedMessage resultMsg = createMessage();
         final DataMessageComponent comp = new DataMessageComponent();
+        comp.putScalar(ScalarNames.WORKINGDIR, jobSpecFile.getParent());
         for (String propName : jobSpec.stringPropertyNames()) {
           comp.putScalar(propName, jobSpec.getProperty(propName));
         }
