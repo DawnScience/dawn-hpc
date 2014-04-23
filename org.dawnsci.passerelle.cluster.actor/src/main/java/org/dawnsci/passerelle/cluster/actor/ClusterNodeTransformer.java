@@ -16,8 +16,11 @@
 
 package org.dawnsci.passerelle.cluster.actor;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -31,11 +34,14 @@ import org.dawnsci.passerelle.cluster.actor.internal.WorkflowServiceHolder;
 import org.dawnsci.passerelle.cluster.service.AnalysisJobBean;
 import org.dawnsci.passerelle.cluster.service.IJob;
 import org.dawnsci.passerelle.cluster.service.JobListener;
+import org.dawnsci.passerelle.cluster.service.ScalarNames;
 import org.dawnsci.passerelle.cluster.service.SliceBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ptolemy.actor.gui.style.TextStyle;
 import ptolemy.data.IntToken;
+import ptolemy.data.StringToken;
 import ptolemy.data.expr.FileParameter;
 import ptolemy.data.expr.Parameter;
 import ptolemy.data.expr.StringParameter;
@@ -86,6 +92,8 @@ public class ClusterNodeTransformer extends Actor {
    */
   public FileParameter workflowFileParameter;
 
+  public StringParameter extraJobArgsParameter;
+
   public Parameter timeoutParameter;
   public StringChoiceParameter timeUnitParameter;
 
@@ -103,8 +111,11 @@ public class ClusterNodeTransformer extends Actor {
     runtimeParameter = new StringParameter(this, "Runtime");
     runtimeParameter.setExpression("runWorkflow.sh");
     registerExpertParameter(runtimeParameter);
-    
+
     workflowFileParameter = new FileParameter(this, "Workflow");
+
+    extraJobArgsParameter = new StringParameter(this, "Extra job args");
+    new TextStyle(extraJobArgsParameter, "paramsTextArea");
 
     timeoutParameter = new Parameter(this, "timeout", new IntToken(10));
     timeUnitParameter = new StringChoiceParameter(this, "time unit", TIMEUNIT_CHOICES, 1 << 2 /* SWT.SINGLE */);
@@ -130,24 +141,21 @@ public class ClusterNodeTransformer extends Actor {
     } catch (Exception e) {
       throw new ProcessingException(ErrorCode.MSG_CONTENT_TYPE_ERROR, "Error getting DataMessageComponent from received message", this, message, e);
     }
-    SliceBean slice = new SliceBean(
-        dmc.getScalar(ScalarNames.DATASET), 
-        dmc.getScalar(ScalarNames.SLICE), 
-        dmc.getScalar(ScalarNames.SHAPE), 
-        new File(dmc.getScalar(ScalarNames.FILEPATH)));
+    SliceBean slice = new SliceBean(dmc.getScalar(ScalarNames.DATASET), dmc.getScalar(ScalarNames.SLICE), dmc.getScalar(ScalarNames.SHAPE), new File(
+        dmc.getScalar(ScalarNames.FILEPATH)));
 
     try {
       long timeout = ((IntToken) timeoutParameter.getToken()).longValue();
       TimeUnit timeUnit = TimeUnit.valueOf(timeUnitParameter.stringValue());
-      AnalysisJobBean job = WorkflowServiceHolder
-          .getInstance()
-          .getClusterService()
-          .submitAnalysisJob(System.getProperty("user.name", "DAWN"), 
-              Long.toString(message.getID()), 
+
+      AnalysisJobBean job = WorkflowServiceHolder.getInstance().getClusterService().submitAnalysisJob(
+              System.getProperty("user.name", "DAWN"), Long.toString(message.getID()), 
               runtimeParameter.stringValue(),
-              workflowFileParameter.asFile().getAbsolutePath(), 
-              slice, timeout, timeUnit, 
+              workflowFileParameter.asFile().getAbsolutePath(), slice, 
+              getExtraJobArgs(),
+              timeout, timeUnit, 
               new AnalysisJobListener(message.getID(), response));
+      
       wipQueue.add(job.getCorrelationID());
     } catch (IllegalActionException e) {
       throw new ProcessingException(ErrorCode.ACTOR_EXECUTION_ERROR, "Error reading actor parameters", this, message, e);
@@ -176,6 +184,25 @@ public class ClusterNodeTransformer extends Actor {
       }
     }
     return result;
+  }
+
+  private Map<String, String> getExtraJobArgs() {
+    try {
+      String paramDefs = ((StringToken) extraJobArgsParameter.getToken()).stringValue();
+      if (paramDefs != null && !paramDefs.trim().isEmpty()) {
+        Map<String, String> extraArgsMap = new HashMap<String, String>();
+        BufferedReader reader = new BufferedReader(new StringReader(paramDefs));
+        String paramDef = null;
+        while ((paramDef = reader.readLine()) != null) {
+          String[] paramKeyValue = paramDef.split("=");
+          extraArgsMap.put(paramKeyValue[0], paramKeyValue[1]);
+        }
+        return extraArgsMap;
+      }
+    } catch (Exception e) {
+      getLogger().error(ErrorCode.ACTOR_EXECUTION_ERROR + " - Error reading extra job args", e);
+    }
+    return null;
   }
 
   /**

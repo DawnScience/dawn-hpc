@@ -1,4 +1,4 @@
-package org.dawnsci.passerelle.cluster.actor;
+package org.dawnsci.passerelle.cluster.service;
 
 public interface ScalarNames {
 

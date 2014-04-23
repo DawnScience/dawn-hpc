@@ -21,6 +21,7 @@ import java.io.FileWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -33,7 +34,6 @@ import org.dawnsci.passerelle.cluster.service.drmaa.internal.ClusterServiceConfi
 import org.dawnsci.passerelle.cluster.service.drmaa.internal.DrmaaJobWaiterService;
 import org.ggf.drmaa.AlreadyActiveSessionException;
 import org.ggf.drmaa.DrmaaException;
-import org.ggf.drmaa.FileTransferMode;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.NoActiveSessionException;
 import org.ggf.drmaa.Session;
@@ -104,9 +104,13 @@ public class DrmaaWorkflowClusterService implements IWorkflowClusterService {
     LOGGER.trace("deactivate() - exit");
   }
 
+  /**
+   * extraArgs will be written as properties in the jobSpec file, next to the slice elements
+   */
   @Override
-  public AnalysisJobBean submitAnalysisJob(String initiator, String correlationID, String runtimeSpec, String workflowSpec, SliceBean dataSpec, long timeout, TimeUnit unit,
-      JobListener listener) throws JobRefusedException {
+  public AnalysisJobBean submitAnalysisJob(String initiator, String correlationID, String runtimeSpec, String workflowSpec, SliceBean dataSpec, 
+      Map<String, String> extraArgs, long timeout, TimeUnit unit, JobListener listener) throws JobRefusedException {
+    
     LOGGER.trace("submitAnalysisJob() - entry : {} submits job {} with runtime {} and workflow {} for data {}", 
         new Object[] { initiator, correlationID, runtimeSpec, workflowSpec, dataSpec });
     if (!active) {
@@ -115,7 +119,7 @@ public class DrmaaWorkflowClusterService implements IWorkflowClusterService {
     String dataFile = dataSpec.getFilePath();
     File processingRootFolder = configurer.getProcessingRootForCollectedData(new File(dataFile), null);
     File jobFolder = configurer.getNewProcessingJobFolder(processingRootFolder );
-    writeSliceBean(jobFolder, dataSpec);
+    writeSliceBean(jobFolder, dataSpec, extraArgs);
     
     AnalysisJobBean jobBean = new AnalysisJobBean(initiator, jobFolder, correlationID, dataSpec);
     try {
@@ -130,9 +134,9 @@ public class DrmaaWorkflowClusterService implements IWorkflowClusterService {
       }
       // these are the "real" job-specific arguments
       args.add(workflowSpec);
-      args.add("jobFolder=" + jobFolder.getAbsolutePath());
+      args.add("-DworkingDir=" + jobFolder.getAbsolutePath());
       jobTemplate.setArgs(args);
-//      jobTemplate.setTransferFiles(new FileTransferMode(false, false, false));
+      jobTemplate.setWorkingDirectory(jobFolder.getAbsolutePath());
       
       String drmaaJobId = session.runJob(jobTemplate);
       jobBean.setInternalJobID(drmaaJobId);
@@ -147,8 +151,13 @@ public class DrmaaWorkflowClusterService implements IWorkflowClusterService {
     }
   }
 
-  private void writeSliceBean(File jobFolder, SliceBean sliceBean) {
+  private void writeSliceBean(File jobFolder, SliceBean sliceBean, Map<String,String> extraArgs) {
     Properties props = sliceBean.toProperties();
+    if(extraArgs!=null && !extraArgs.isEmpty()) {
+      for(String argKey : extraArgs.keySet()) {
+        props.put(argKey, extraArgs.get(argKey));
+      }
+    }
     Writer writer = null;
     try {
       writer = new FileWriter(new File(jobFolder, "dataSlice.properties"));

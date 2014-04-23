@@ -16,6 +16,7 @@
 
 package org.dawnsci.passerelle.cluster.service;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -34,6 +35,7 @@ public interface IWorkflowClusterService {
    * @param runtimeSpec the command to start the workflow runtime
    * @param workflowSpec the name of the workflow to be used
    * @param dataSpec
+   * @param extraArgs extra key/value arguments to pass to the job
    * @param timeout
    * @param unit
    * @param listener an optional listener that will be notified when the submitted job is finished (or failed to be executed)
@@ -41,5 +43,6 @@ public interface IWorkflowClusterService {
    * 
    * @throws JobRefusedException when the job can not be accepted for whatever reason
    */
-  AnalysisJobBean submitAnalysisJob(String initiator, String correlationID, String runtimeSpec, String workflowSpec, SliceBean dataSpec, long timeout, TimeUnit unit, JobListener listener) throws JobRefusedException;
+  AnalysisJobBean submitAnalysisJob(String initiator, String correlationID, String runtimeSpec, String workflowSpec, SliceBean dataSpec, Map<String, String> extraArgs,
+      long timeout, TimeUnit unit, JobListener listener) throws JobRefusedException;
 }

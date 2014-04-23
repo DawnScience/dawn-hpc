@@ -41,19 +41,19 @@ public class SliceBean {
   }
   
   public static SliceBean fromProperties(Properties props) {
-    String dataSet = props.getProperty("dataSet");
-    String slice = props.getProperty("slice");
-    String shape=props.getProperty("shape");
-    String file=props.getProperty("file");
+    String dataSet = props.getProperty(ScalarNames.DATASET);
+    String slice = props.getProperty(ScalarNames.SLICE);
+    String shape=props.getProperty(ScalarNames.SHAPE);
+    String file=props.getProperty(ScalarNames.FILEPATH);
     return new SliceBean(dataSet, slice, shape, file!=null ? new File(file):null);
   }
   
   public Properties toProperties() {
     Properties props = new Properties();
-    props.put("dataSet", getDataSet());
-    props.put("slice", getSlice());
-    props.put("shape", getShape());
-    props.put("file", getFilePath());
+    props.put(ScalarNames.DATASET, getDataSet());
+    props.put(ScalarNames.SLICE, getSlice());
+    props.put(ScalarNames.SHAPE, getShape());
+    props.put(ScalarNames.FILEPATH, getFilePath());
     return props;
   }
 
