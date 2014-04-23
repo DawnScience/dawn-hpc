@@ -88,6 +88,7 @@ public class JobExecutionTask implements CancellableTask<Integer> {
       LOGGER.debug("Process error" + LINE_SEPARATOR + "\t" + cmdLine.getStderrAsString());
     } catch (Exception e) {
       LOGGER.error("Error starting Job "+jobTemplate.getJobName(), e);
+      exitStatus = 2;
     }
     return exitStatus;
   }
