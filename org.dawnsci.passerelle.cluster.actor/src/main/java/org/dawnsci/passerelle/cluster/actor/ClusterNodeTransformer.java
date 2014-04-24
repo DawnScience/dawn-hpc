@@ -155,7 +155,7 @@ public class ClusterNodeTransformer extends Actor {
               getExtraJobArgs(),
               timeout, timeUnit, 
               new AnalysisJobListener(message.getID(), response));
-      
+
       wipQueue.add(job.getCorrelationID());
     } catch (IllegalActionException e) {
       throw new ProcessingException(ErrorCode.ACTOR_EXECUTION_ERROR, "Error reading actor parameters", this, message, e);
@@ -214,7 +214,7 @@ public class ClusterNodeTransformer extends Actor {
   private Map<String, ProcessResponse> finishedJobs = new ConcurrentHashMap<>();
 
   private void checkWIP() {
-    synchronized (wipQueue) {
+//    synchronized (wipQueue) {
       if (!wipQueue.isEmpty()) {
         String jobInLine = wipQueue.peek();
         if (finishedJobs.containsKey(jobInLine)) {
@@ -225,7 +225,7 @@ public class ClusterNodeTransformer extends Actor {
           // and try to pop next one as well, its termination notification may have arrived before as well
           checkWIP();
         }
-      }
+//      }
     }
   }
 
@@ -248,11 +248,16 @@ public class ClusterNodeTransformer extends Actor {
         resultMsg.addCauseID(causeMsgID);
         final DataMessageComponent comp = new DataMessageComponent();
         // TODO must we pass the input slice info alongside this result data info??
-        comp.putScalar(ScalarNames.DATASET, sliceBean.getDataSet());
-        comp.putScalar(ScalarNames.SLICE, sliceBean.getSlice());
-        comp.putScalar(ScalarNames.SHAPE, sliceBean.getShape());
-        comp.putScalar(ScalarNames.FILENAME, sliceBean.getFile().getName());
-        comp.putScalar(ScalarNames.FILEPATH, sliceBean.getFile().getAbsolutePath());
+        if (sliceBean.getDataSet() != null)
+          comp.putScalar(ScalarNames.DATASET, sliceBean.getDataSet());
+        if (sliceBean.getSlice() != null)
+          comp.putScalar(ScalarNames.SLICE, sliceBean.getSlice());
+        if (sliceBean.getShape() != null)
+          comp.putScalar(ScalarNames.SHAPE, sliceBean.getShape());
+        if (sliceBean.getFile() != null) {
+          comp.putScalar(ScalarNames.FILENAME, sliceBean.getFile().getName());
+          comp.putScalar(ScalarNames.FILEPATH, sliceBean.getFile().getAbsolutePath());
+        }
 
         try {
           resultMsg.setBodyContent(comp, DatasetConstants.CONTENT_TYPE_DATA);
