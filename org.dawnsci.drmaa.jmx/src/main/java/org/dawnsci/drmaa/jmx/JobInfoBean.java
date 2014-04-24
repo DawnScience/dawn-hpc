@@ -15,6 +15,9 @@
  */
 package org.dawnsci.drmaa.jmx;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.dawnsci.drmaa.common.JobInfoImpl;
 import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.JobInfo;
@@ -37,6 +40,7 @@ public class JobInfoBean {
   private String terminatingSignal;
   private boolean coreDump=false;
   private boolean aborted=false;
+  private Map<String, String> resourceUsage = new HashMap<>();
   
   public JobInfoBean() {
   }
@@ -63,6 +67,15 @@ public class JobInfoBean {
   public void setExitStatus(int exitStatus) {
     this.exitStatus = exitStatus;
   }
+  
+  public Map<String, String> getResourceUsage() {
+    return resourceUsage;
+  }
+  
+  public void setResourceUsage(Map<String, String> resourceUsage) {
+    this.resourceUsage = resourceUsage;
+  }
+  
   public boolean isSignaled() {
     return signaled;
   }
@@ -97,6 +110,7 @@ public class JobInfoBean {
       lji.setExitStatus(getExitStatus());
       lji.setSignaled(isSignaled());
       lji.setTerminatingSignal(getTerminatingSignal());
+      lji.setResourceUsage(getResourceUsage());
     }
   }
 
@@ -109,6 +123,9 @@ public class JobInfoBean {
       setSignaled(localJi.hasSignaled());
       if(isSignaled())
         setTerminatingSignal(localJi.getTerminatingSignal());
+      if(localJi.getResourceUsage()!=null) {
+        setResourceUsage(localJi.getResourceUsage());
+      }
     }
   }
 
