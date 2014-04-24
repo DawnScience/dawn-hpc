@@ -138,6 +138,13 @@ public class DrmaaWorkflowClusterService implements IWorkflowClusterService {
       jobTemplate.setArgs(args);
       jobTemplate.setWorkingDirectory(jobFolder.getAbsolutePath());
       
+      if(extraArgs.containsKey("jobCategory")) {
+        jobTemplate.setJobCategory(extraArgs.get("jobCategory"));
+      }
+      if(extraArgs.containsKey("nativeSpec")) {
+        jobTemplate.setNativeSpecification(extraArgs.get("nativeSpec"));
+      }
+      
       String drmaaJobId = session.runJob(jobTemplate);
       jobBean.setInternalJobID(drmaaJobId);
 
