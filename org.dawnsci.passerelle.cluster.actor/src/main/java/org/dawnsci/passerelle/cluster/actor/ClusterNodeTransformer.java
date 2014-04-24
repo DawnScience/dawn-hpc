@@ -214,7 +214,7 @@ public class ClusterNodeTransformer extends Actor {
   private Map<String, ProcessResponse> finishedJobs = new ConcurrentHashMap<>();
 
   private void checkWIP() {
-//    synchronized (wipQueue) {
+    synchronized (wipQueue) {
       if (!wipQueue.isEmpty()) {
         String jobInLine = wipQueue.peek();
         if (finishedJobs.containsKey(jobInLine)) {
@@ -225,7 +225,7 @@ public class ClusterNodeTransformer extends Actor {
           // and try to pop next one as well, its termination notification may have arrived before as well
           checkWIP();
         }
-//      }
+      }
     }
   }
 

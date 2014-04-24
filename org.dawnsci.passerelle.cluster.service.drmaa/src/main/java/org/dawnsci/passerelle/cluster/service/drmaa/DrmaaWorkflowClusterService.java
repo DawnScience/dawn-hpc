@@ -138,10 +138,10 @@ public class DrmaaWorkflowClusterService implements IWorkflowClusterService {
       jobTemplate.setArgs(args);
       jobTemplate.setWorkingDirectory(jobFolder.getAbsolutePath());
       
-      if(extraArgs.containsKey("jobCategory")) {
+      if(extraArgs!=null && extraArgs.containsKey("jobCategory")) {
         jobTemplate.setJobCategory(extraArgs.get("jobCategory"));
       }
-      if(extraArgs.containsKey("nativeSpec")) {
+      if(extraArgs!=null && extraArgs.containsKey("nativeSpec")) {
         jobTemplate.setNativeSpecification(extraArgs.get("nativeSpec"));
       }
       
@@ -150,6 +150,7 @@ public class DrmaaWorkflowClusterService implements IWorkflowClusterService {
 
       jobWaiterService.submitjob(jobBean, listener, timeout, unit);
 
+      session.deleteJobTemplate(jobTemplate);
       LOGGER.info("Submitted job {}", jobBean);
       LOGGER.trace("submitAnalysisJob() - exit");
       return jobBean;
