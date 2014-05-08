@@ -5,3 +5,4 @@
 /org.dawnsci.passerelle.cluster.service/target
 /org.dawnsci.passerelle.cluster.service.drmaa/target
 /org.dawnsci.drmaa.jmx.client/target
+/org.dawnsci.drmaa.jmx.client.test/target

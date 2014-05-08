@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DRMAA JMX client test
+Bundle-SymbolicName: org.dawnsci.drmaa.jmx.client.test
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Diamond LS
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Import-Package: org.eclipse.osgi.framework.console;version="1.1.0",
+ org.ggf.drmaa;version="1.0.0"
+Service-Component: OSGI-INF/component.xml
