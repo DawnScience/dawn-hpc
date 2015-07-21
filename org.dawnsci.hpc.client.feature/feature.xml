@@ -3,7 +3,7 @@
       id="org.dawnsci.hpc.client.feature"
       label="DAWN HPC client-side Feature"
       version="1.0.0.qualifier"
-      provider-name="Diamond LS">
+      provider-name="Diamond Light Source">
 
    <description>
       A feature used in the Data Analysis Workbench
