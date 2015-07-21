@@ -4,7 +4,7 @@ Bundle-Name: Cluster-oriented actors
 Bundle-SymbolicName: org.dawnsci.passerelle.cluster.actor
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.dawnsci.passerelle.cluster.actor.activator.Activator
-Bundle-Vendor: Diamond LS
+Bundle-Vendor: Diamond Light Source
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Service-Component: OSGI-INF/workflowClusterServiceHolder.xml
 Import-Package: com.isencia.passerelle.actor;version="8.3.0",

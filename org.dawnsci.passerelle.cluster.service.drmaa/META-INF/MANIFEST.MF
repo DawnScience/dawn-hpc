@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: DAWN Workflow Cluster Service impl on DRMAA
 Bundle-SymbolicName: org.dawnsci.passerelle.cluster.service.drmaa
 Bundle-Version: 1.0.0.qualifier
-Bundle-Vendor: Diamond LS
+Bundle-Vendor: Diamond Light Source
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Service-Component: OSGI-INF/workflowClusterService.xml
 Import-Package: org.dawnsci.passerelle.cluster.service,

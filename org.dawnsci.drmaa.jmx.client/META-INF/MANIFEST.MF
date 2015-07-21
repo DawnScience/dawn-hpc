@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: DRMAA remoting JMX Client
 Bundle-SymbolicName: org.dawnsci.drmaa.jmx.client
 Bundle-Version: 1.0.0.qualifier
-Bundle-Vendor: Diamond LS
+Bundle-Vendor: Diamond Light Source
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: org.dawnsci.drmaa.common;version="1.0.0",
  org.dawnsci.drmaa.jmx;version="1.0.0",
