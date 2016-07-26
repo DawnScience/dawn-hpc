@@ -20,7 +20,6 @@ Import-Package: com.isencia.passerelle.actor;version="8.3.0",
  org.dawb.passerelle.common.parameter,
  org.dawb.passerelle.common.utils,
  org.dawnsci.passerelle.cluster.service,
- org.eclipse.dawnsci.analysis.api.dataset,
  org.eclipse.dawnsci.analysis.api.io,
  org.eclipse.dawnsci.analysis.api.message,
  org.eclipse.dawnsci.slicing.api.system,
@@ -30,4 +29,5 @@ Import-Package: com.isencia.passerelle.actor;version="8.3.0",
  ptolemy.data.expr;version="7.0.1",
  ptolemy.kernel;version="7.0.1",
  ptolemy.kernel.util;version="7.0.1"
-Require-Bundle: ptolemy.core;bundle-version="7.0.1"
+Require-Bundle: ptolemy.core;bundle-version="7.0.1",
+ org.eclipse.january;bundle-version="1.0.0"
